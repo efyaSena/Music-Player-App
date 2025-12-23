@@ -8,7 +8,7 @@ import Welcome from './pages/Welcome.jsx'
 import Login from './pages/Login.jsx'
 
 import Search from './pages/Search.jsx'
-import TrackDetail from './pages/TrackDetail.jsx'
+import TrackDetail from './pages/TracksDetail.jsx'
 import Playlist from './pages/Playlist.jsx'
 
 ReactDOM.createRoot(document.getElementById('root')).render(

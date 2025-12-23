@@ -5,7 +5,8 @@ import TrackCard from "../components/TrackCard";
 import PlayListCard from "../components/PlaylistCard";
 import PlayerBar from "../components/PlayerBar";
 
-const TrackDetail = () => {
+const TracksDetail = () => {
+    console.log("TrackDetail component rendered");
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
 
@@ -22,17 +23,8 @@ const TrackDetail = () => {
         <SearchBar />
       </div>
 
-      
-      <div className="px-4 mt-4">
-        <button className="flex items-center justify-between w-full bg-[#00FFFF] text-black py-2 px-3 rounded-md text-sm font-semibold">
-          <img src="/assets/music-icon.png" className="h-4 w-4" alt="music icon" />
-          Not Playing
-          <img src="/assets/next-icon.png" className="h-4 w-4" alt="next icon" />
-        </button>
-      </div>
 
-     
-      <div className="px-4 mt-8">
+    <div className="px-4 mt-8">
         <h2 className="text-sm text-gray-300 mb-3">Trending this week</h2>
         <div className="flex gap-3 overflow-x-auto pb-2">
           <TrackCard />
@@ -44,8 +36,7 @@ const TrackDetail = () => {
         </div>
       </div>
 
-     
-      <div className="px-4 mt-10">
+    <div className="px-4 mt-10">
         <h2 className="text-sm text-gray-300 mb-3">Playlists</h2>
         <div className="flex gap-4 flex-col">
           <PlayListCard />
@@ -53,10 +44,18 @@ const TrackDetail = () => {
         </div>
       </div>
 
-     
+      
+      <div className="px-4 mt-4">
+        <button className="flex items-center justify-between w-full bg-[#00FFFF] text-black py-2 px-3 rounded-md text-sm font-semibold">
+          <img src="/assets/music-icon.png" className="h-4 w-4" alt="music icon" />
+          Not Playing
+          <img src="/assets/next-icon.png" className="h-4 w-4" alt="next icon" />
+        </button>
+      </div>
+
       <PlayerBar />
     </div>
   );
 };
 
-export default TrackDetail;
+export default TracksDetail;

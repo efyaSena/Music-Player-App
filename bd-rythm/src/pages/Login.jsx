@@ -6,7 +6,7 @@ const Login = () => {
   const navigate = useNavigate();
 
   const handleLogin = () => {
-    navigate("/trackdetail"); 
+    navigate("/Playlist"); 
   };
 
   return (
