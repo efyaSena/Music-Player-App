@@ -2,39 +2,87 @@ import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/BD-RYTHM-logo.png";
 import PlayerBar from "../components/PlayerBar";
+import PlaylistSheet from "../components/PlaylistSheet";
 
 export default function HomePage() {
   const navigate = useNavigate();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const trendingSongs = useMemo(
-    () => Array.from({ length: 10 }).map((_, i) => ({ id: `trend-${i}` })),
+    () => [
+      // Afro / Afrobeats
+      { id: "t1", artist: "Burna Boy", title: "Last Last", genre: "Afrobeat" },
+      { id: "t2", artist: "Ayra Starr", title: "Rush", genre: "Afrobeat" },
+
+      // Amapiano
+      { id: "t3", artist: "Tyler ICU", title: "Mnike", genre: "Amapiano" },
+      { id: "t4", artist: "Kabza De Small", title: "Sponono", genre: "Amapiano" },
+
+      // Hip-hop
+      {
+        id: "t5",
+        artist: "Drake",
+        title: "First Person Shooter",
+        genre: "Hip-hop",
+      },
+      { id: "t6", artist: "Travis Scott", title: "FE!N", genre: "Hip-hop" },
+
+      // Pop
+      { id: "t7", artist: "Taylor Swift", title: "Cruel Summer", genre: "Pop" },
+      { id: "t8", artist: "The Weeknd", title: "Popular", genre: "Pop" },
+
+      // R&B
+      { id: "t9", artist: "SZA", title: "Kill Bill", genre: "R&B" },
+      { id: "t10", artist: "Brent Faiyaz", title: "Best Time", genre: "R&B" },
+
+      // EDM
+      { id: "t11", artist: "Calvin Harris", title: "Miracle", genre: "EDM" },
+
+      // Reggae / Caribbean
+      { id: "t12", artist: "Sean Paul", title: "Temperature", genre: "Reggae" },
+
+      // Gospel
+      { id: "t13", artist: "Maverick City", title: "Jireh", genre: "Gospel" },
+
+      // Rock / Indie
+      {
+        id: "t14",
+        artist: "Arctic Monkeys",
+        title: "I Wanna Be Yours",
+        genre: "Indie",
+      },
+    ],
     []
   );
 
   const topAlbums = useMemo(
-    () =>
-      Array.from({ length: 8 }).map((_, i) => ({
-        id: `album-${i}`,
-        name: "Genres",
-      })),
+    () => [
+      { id: "a1", name: "SOS", artist: "SZA", genre: "R&B" },
+      { id: "a2", name: "UTOPIA", artist: "Travis Scott", genre: "Hip-hop" },
+      { id: "a3", name: "Unavailable (EP)", artist: "Davido", genre: "Afrobeat" },
+      { id: "a4", name: "Renaissance", artist: "Beyoncé", genre: "Pop" },
+      { id: "a5", name: "After Hours", artist: "The Weeknd", genre: "Pop" },
+      { id: "a6", name: "Born Pink", artist: "BLACKPINK", genre: "K-Pop" },
+      { id: "a7", name: "÷ (Divide)", artist: "Ed Sheeran", genre: "Pop" },
+      { id: "a8", name: "Amapiano Hits", artist: "Various", genre: "Amapiano" },
+      { id: "a9", name: "Legend", artist: "Bob Marley", genre: "Reggae" },
+      { id: "a10", name: "Dark Side", artist: "Pink Floyd", genre: "Rock" },
+    ],
     []
   );
 
-  const viewAllBtn =
-    "bg-[#CFFFFF] text-black text-[9px] font-bold px-3 py-1 rounded-full transition duration-200 hover:bg-[#00FFFF] hover:scale-105 active:scale-95";
-
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col relative">
+    <div className="min-h-screen bg-black text-white flex flex-col">
       <div className="flex-1 px-6 pt-10 pb-6">
         <div className="flex justify-center">
           <img src={logo} alt="BD Rhythm Logo" className="w-40" />
         </div>
 
         <div className="mt-10 max-w-md mx-auto">
-          <PlayerBar />
+          <PlayerBar onOpenMenu={() => setIsSheetOpen(true)} />
         </div>
 
+        {/* TRENDING SECTION */}
         <div className="mt-12 max-w-md mx-auto">
           <p className="text-center text-[#00FFFF] text-xs font-bold">
             Trending this week
@@ -45,49 +93,130 @@ export default function HomePage() {
               (trending songs)
             </p>
 
-            <button type="button" className={viewAllBtn} onClick={() => {}}>
+            <button
+              type="button"
+              onClick={() => navigate("/trending-songs")}
+              className="
+                bg-[#CFFFFF]
+                text-black
+                text-[9px]
+                font-bold
+                px-3
+                py-1
+                rounded-full
+                transition
+                duration-200
+                hover:bg-[#00FFFF]
+                hover:scale-105
+                active:scale-95
+              "
+            >
               view all
             </button>
           </div>
 
           <div className="mt-3 flex gap-4 overflow-x-auto scrollbar-hide pb-2">
-            {trendingSongs.map((song) => (
-              <div
-                key={song.id}
-                className="shrink-0 w-24 h-6 bg-[#00EFFF] rounded-full"
-              />
-            ))}
-          </div>
+  {trendingSongs.map((song) => (
+    <button
+      key={song.id}
+      type="button"
+      onClick={() => navigate("/home", { state: { track: song } })}
+      className="
+        shrink-0
+        px-4
+        h-7
+        rounded-full
+        bg-[#00EFFF]
+        text-black
+        text-[9px]
+        font-extrabold
+        flex items-center
+        transition
+        duration-200
+        hover:scale-105
+        active:scale-95
+      "
+      title={`${song.artist} • ${song.title}`}
+    >
+      <span className="truncate max-w-[120px]">
+        {song.artist} — {song.title}
+      </span>
+    </button>
+  ))}
+</div>
+
         </div>
 
+        {/* TOP ALBUMS SECTION */}
         <div className="mt-8 max-w-md mx-auto">
           <div className="flex items-center justify-between">
             <p className="text-[#00FFFF] text-[10px] font-bold">(top albums)</p>
 
-            <button type="button" className={viewAllBtn} onClick={() => {}}>
+            <button
+              type="button"
+              onClick={() => navigate("/top-albums")}
+              className="
+                bg-[#CFFFFF]
+                text-black
+                text-[9px]
+                font-bold
+                px-3
+                py-1
+                rounded-full
+                transition
+                duration-200
+                hover:bg-[#00FFFF]
+                hover:scale-105
+                active:scale-95
+              "
+            >
               view all
             </button>
           </div>
 
           <div className="mt-4 flex gap-4 overflow-x-auto scrollbar-hide pb-2">
             {topAlbums.map((album) => (
-              <div
+              <button
                 key={album.id}
-                className="shrink-0 w-16 h-20 bg-[#CFFFFF] rounded-xl flex items-center justify-center"
+                type="button"
+                onClick={() =>
+                  navigate("/top-albums", { state: { focus: album.genre } })
+                }
+                className="shrink-0 w-16 h-20 bg-[#CFFFFF] rounded-xl flex items-end p-2 transition duration-200 hover:scale-105 active:scale-95"
+                title={`${album.name} • ${album.artist}`}
               >
-                <p className="text-black text-[9px] font-bold">{album.name}</p>
-              </div>
+                <div className="text-left leading-tight w-full">
+                  <p className="text-black text-[9px] font-black truncate">
+                    {album.name}
+                  </p>
+                  <p className="text-black/70 text-[8px] font-semibold truncate">
+                    {album.artist}
+                  </p>
+                </div>
+              </button>
             ))}
           </div>
         </div>
       </div>
 
+      {/* BOTTOM BAR */}
       <div className="h-20 bg-[#00EFFF] flex items-center justify-between px-10">
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="text-black text-4xl font-black leading-none"
           aria-label="Back"
+          className="
+            w-12 h-12
+            flex items-center justify-center
+            rounded-full
+            bg-black
+            text-[#00EFFF]
+            text-3xl font-black
+            transition
+            duration-200
+            hover:scale-110
+            active:scale-95
+          "
         >
           ↩
         </button>
@@ -95,44 +224,29 @@ export default function HomePage() {
         <button
           type="button"
           onClick={() => setIsSheetOpen(true)}
-          className="text-black text-4xl font-black leading-none"
-          aria-label="Open playlist drawer"
+          aria-label="Open playlist sheet"
+          className="
+            w-12 h-12
+            flex items-center justify-center
+            rounded-full
+            bg-black
+            text-[#00EFFF]
+            text-3xl font-black
+            transition
+            duration-200
+            hover:scale-110
+            active:scale-95
+          "
         >
           ≡+
         </button>
       </div>
 
-      {isSheetOpen && (
-        <div className="fixed inset-0 z-50">
-          <button
-            type="button"
-            className="absolute inset-0 bg-black/60"
-            onClick={() => setIsSheetOpen(false)}
-            aria-label="Close playlist drawer"
-          />
-
-          <div className="absolute bottom-0 left-0 right-0 mx-auto max-w-md">
-            <div className="bg-[#CFFFFF] rounded-t-3xl px-6 pt-6 pb-8 shadow-xl">
-              <div className="flex justify-center mb-4">
-                <div className="w-12 h-1.5 bg-black/30 rounded-full" />
-              </div>
-
-              <button
-                type="button"
-                className="mx-auto block bg-[#00EFFF] text-black font-black text-xs px-6 py-3 rounded-full transition duration-200 hover:scale-105 active:scale-95"
-                onClick={() => {}}
-              >
-                create new playlist
-              </button>
-
-              <div className="mt-6 flex flex-col gap-6">
-                <div className="w-16 h-16 bg-[#00EFFF] rounded-lg" />
-                <div className="w-16 h-16 bg-[#00EFFF] rounded-lg" />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* PLAYLIST SHEET */}
+      <PlaylistSheet
+        isOpen={isSheetOpen}
+        onClose={() => setIsSheetOpen(false)}
+      />
     </div>
   );
 }

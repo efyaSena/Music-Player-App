@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import BottomNav from "../components/BottomNav";
+
 
 export default function TrendingSongs() {
   const navigate = useNavigate();
@@ -188,6 +190,9 @@ export default function TrendingSongs() {
       </div>
 
       <div className="h-20 bg-[#00EFFF]" />
+
+      <BottomNav />
+
     </div>
   );
 }

@@ -47,6 +47,59 @@ const GENRES = [
       { artist: "Scorpion Kings", title: "Amathole" },
     ]),
   },
+
+  {
+  id: "afrosounds",
+  name: "Afro Sounds",
+  songs: expandSongs([
+    { artist: "Burna Boy", title: "Ye" },
+    { artist: "Wizkid", title: "Ojuelegba" },
+    { artist: "Davido", title: "Fall" },
+    { artist: "Rema", title: "Dumebi" },
+    { artist: "Ayra Starr", title: "Away" },
+    { artist: "Fireboy DML", title: "Jealous" },
+    { artist: "Omah Lay", title: "Bad Influence" },
+    { artist: "Asake", title: "Joha" },
+    { artist: "Tekno", title: "Pana" },
+    { artist: "Stonebwoy", title: "Activate" },
+  ]),
+},
+
+  {
+  id: "caribbean",
+  name: "Caribbean / Reggaeton",
+  songs: expandSongs([
+    { artist: "Bad Bunny", title: "Tití Me Preguntó" },
+    { artist: "Daddy Yankee", title: "Gasolina" },
+    { artist: "J Balvin", title: "Mi Gente" },
+    { artist: "Karol G", title: "Bichota" },
+    { artist: "Ozuna", title: "Se Preparó" },
+    { artist: "Rauw Alejandro", title: "Todo De Ti" },
+    { artist: "Don Omar", title: "Danza Kuduro" },
+    { artist: "Nicky Jam", title: "El Perdón" },
+    { artist: "Sean Paul", title: "Temperature" },
+    { artist: "Farruko", title: "Pepas" },
+  ]),
+},
+
+
+  {
+  id: "gospel",
+  name: "Gospel",
+  songs: expandSongs([
+    { artist: "Kirk Franklin", title: "I Smile" },
+    { artist: "CeCe Winans", title: "Goodness of God" },
+    { artist: "Tasha Cobbs Leonard", title: "Break Every Chain" },
+    { artist: "Sinach", title: "Way Maker" },
+    { artist: "Nathaniel Bassey", title: "Imela" },
+    { artist: "William McDowell", title: "Withholding Nothing" },
+    { artist: "Travis Greene", title: "Intentional" },
+    { artist: "Donnie McClurkin", title: "We Fall Down" },
+    { artist: "Maverick City Music", title: "Jireh" },
+    { artist: "Elevation Worship", title: "Graves Into Gardens" },
+  ]),
+},
+
   {
     id: "trap",
     name: "Trap",
