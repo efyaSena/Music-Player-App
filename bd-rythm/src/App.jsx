@@ -5,9 +5,10 @@ import Header from "./components/Header";
 
 import Welcome from "./pages/Welcome";
 import Login from "./pages/Login";
-import Playlist from "./pages/Playlist";
-import Search from "./pages/Search";
-import TracksDetail from "./pages/TracksDetail";
+import Library from "./pages/Library";
+import PlaylistPage from "./pages/PlayListPage";
+import HomePage from "./pages/HomePage";
+
 
 function App() {
   return (
@@ -17,12 +18,13 @@ function App() {
       <Routes>
         <Route path="/" element={<Welcome />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/playlist" element={<Playlist />} />
-        <Route path="/search" element={<Search />} />
-        <Route path="/tracksdetail" element={<TracksDetail />} />
+        <Route path="/library" element={<Library />} />
+        <Route path="/home" element={<HomePage />} />
+        <Route path="/playlistpage" element={<PlaylistPage />} />
       </Routes>
     </BrowserRouter>
   );
 }
+
 
 export default App;

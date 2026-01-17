@@ -1,23 +1,18 @@
 import React from "react";
 
-const TrackCard = ({ size = "medium" }) => {
-  const sizeStyles = {
-    large: "bg-[#00FFFF] rounded-md opacity-80 w-32 h-32",
-    medium: "bg-[#00FFFF] rounded-md opacity-70 w-24 h-24",
-    small: "bg-[#00FFFF] rounded-md opacity-60 w-20 h-20",
-  };
-
+export default function TrackCard({ title = "Song Title", artist = "Artist", onClick }) {
   return (
-    <div className={`flex flex-col items-center ${sizeStyles[size]}`}>
-      <img 
-        src="/assets/track.png" 
-        className="rounded-md object-cover w-full h-full"
-        alt="track"
-      />
-      <p className="text-[10px] text-gray-300 mt-1">Name</p>
-      <p className="text-[10px] text-gray-300 -mt-1">Song Title</p>
-    </div>
-  );
-};
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full flex items-center gap-4 text-left"
+    >
+      <div className="w-12 h-12 bg-[#CFFFFF] rounded-md shrink-0" />
 
-export default TrackCard;
+      <div className="leading-tight">
+        <p className="text-[#00FFFF] text-sm font-bold">{artist}</p>
+        <p className="text-[#00FFFF] text-sm font-semibold">{title}</p>
+      </div>
+    </button>
+  );
+}

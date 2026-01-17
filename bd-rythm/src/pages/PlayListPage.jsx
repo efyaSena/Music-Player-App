@@ -3,7 +3,7 @@ import Navbar from "../components/Navbar";
 import SearchBar from "../components/SearchBar";
 import TrackCard from "../components/TrackCard";
 import PlayListCard from "../components/PlaylistCard";
-import PlayerBar from "../components/PlayerBar";
+import PlayerBar from "../components/BottomNav";
 
 const TracksDetail = () => {
     console.log("TrackDetail component rendered");

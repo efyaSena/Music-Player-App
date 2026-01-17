@@ -6,19 +6,19 @@ import './index.css'
 
 import Welcome from './pages/Welcome.jsx'
 import Login from './pages/Login.jsx'
+import Library from './pages/Library.jsx'
+import HomePage from './pages/HomePage.jsx'
+import PlayListPage from './pages/PlayListPage.jsx'
 
-import Search from './pages/Search.jsx'
-import TrackDetail from './pages/TracksDetail.jsx'
-import Playlist from './pages/Playlist.jsx'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <BrowserRouter>
     <Routes>
       <Route path="/" element={<Welcome />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/search" element={<Search />} />
-      <Route path="/track/:id" element={<TrackDetail />} />
-      <Route path="/playlist" element={<Playlist />} />
+      <Route path="/library" element={<Library />} />
+      <Route path='/homepage' element={<HomePage />} />
+      <Route path="/playlist" element={<PlayListPage />} />
     </Routes>
   </BrowserRouter>
 )

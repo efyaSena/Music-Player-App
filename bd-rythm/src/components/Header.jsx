@@ -14,20 +14,21 @@ const Header = () => {
           <button>LOGIN</button>
         </Link>
 
-        <Link to="/playlist">
+
+         <Link to="/library">
+          <button>LIBRARY</button>
+        </Link>
+
+
+        <Link to="/homepage">
+          <button>HOMEPAGE</button>
+        </Link>
+
+         <Link to="/playlistpage">
           <button>PLAYLIST</button>
         </Link>
 
-        <Link to="/tracksdetail">
-          <button>TRACK DETAIL</button>
-        </Link>
-
-        <Link to="/search">
-          <button className="flex items-center gap-1">
-            <FiSearch className="w-4" />
-            SEARCH
-          </button>
-        </Link>
+      
 
       </nav>
     </header>
