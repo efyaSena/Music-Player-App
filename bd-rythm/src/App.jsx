@@ -13,8 +13,12 @@ import Library from "./pages/Library";
 import PlaylistPage from "./pages/PlayListPage";
 import HomePage from "./pages/HomePage";
 import TrendingSongs from "./pages/TrendingSongs";
-
 import TopAlbums from "./pages/TopAlbums";
+import TopSongs from "./pages/TopSongs";
+import PopularArtists from "./pages/PopularArtists";
+import PopularPlaylists from "./pages/PopularPlaylists";
+import NewReleases from "./pages/NewReleases";
+
 
 function App() {
   return (
@@ -32,6 +36,11 @@ function App() {
         <Route path="/top-albums" element={<TopAlbums />} />
         <Route path="/recorder" element={<AudioRecorder />} />
           <Route path="/search" element={<Search />} />
+          <Route path="/top-songs" element={<TopSongs />} />
+          <Route path="/popular-artists" element={<PopularArtists />} />
+            <Route path="/popular-playlists" element={<PopularPlaylists />} />
+              <Route path="/new-releases" element={<NewReleases />} />
+
 
       </Routes>
     </>

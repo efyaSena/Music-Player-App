@@ -6,7 +6,6 @@ import { useNavigate } from "react-router-dom";
 import PlayerBar from "../components/PlayerBar";
 import SearchBar from "../components/SearchBar";
 
-
 const expandSongs = (base, count = 25) =>
   Array.from({ length: count }).map((_, i) => {
     const s = base[i % base.length];
@@ -54,16 +53,16 @@ const GENRES = [
     id: "afrosounds",
     name: "Afro Sounds",
     songs: expandSongs([
-      { artist: "Burna Boy", title: "Ye" },
-      { artist: "Wizkid", title: "Ojuelegba" },
-      { artist: "Davido", title: "Fall" },
-      { artist: "Rema", title: "Dumebi" },
-      { artist: "Ayra Starr", title: "Away" },
-      { artist: "Fireboy DML", title: "Jealous" },
-      { artist: "Omah Lay", title: "Bad Influence" },
-      { artist: "Asake", title: "Joha" },
-      { artist: "Tekno", title: "Pana" },
-      { artist: "Stonebwoy", title: "Activate" },
+      { artist: "Aṣa", title: "Jailer" },
+      { artist: "Sauti Sol", title: "Suzanna" },
+      { artist: "Blick Bassy", title: "Kiki" },
+      { artist: "Fatoumata Diawara", title: "Nterini" },
+      { artist: "Salif Keita", title: "Yamore" },
+      { artist: "Angelique Kidjo", title: "Agolo" },
+      { artist: "Burna Boy", title: "Omo" },
+      { artist: "Baaba Maal", title: "African Woman" },
+      { artist: "Manu Dibango", title: "Soul Makossa" },
+      { artist: "Sona Jobarteh", title: "Saya" },
     ]),
   },
   {
@@ -292,6 +291,22 @@ const GENRES = [
   },
 ];
 
+// ✅ SECTION 2 CONFIG (pills)
+const SECTION2_PILLS = [
+  { id: "trending-artists", title: "Trending Artists", path: "/listening-trending" },
+  { id: "sweet-90s", title: "Sweet 90’s", path: "/listening-90s" },
+  { id: "street-hits", title: "Street Hits", path: "/listening-street" },
+  { id: "party-starters", title: "Party Starters", path: "/listening-party" },
+];
+
+// ✅ NEW: SECTION 3 CONFIG (mood chips) — different design from section 2
+const SECTION3_MOODS = [
+  { id: "love", title: "Love / Feel Good", path: "/mood-love" },
+  { id: "heartbreak", title: "Heartbreak", path: "/mood-heartbreak" },
+  { id: "gym", title: "Gym / Energy", path: "/mood-gym" },
+  { id: "relax", title: "Relax / Focus", path: "/mood-relax" },
+];
+
 export default function Library() {
   const navigate = useNavigate();
 
@@ -304,6 +319,13 @@ export default function Library() {
 
   const activeGenre = GENRES[activeIndex];
 
+  const SECTION1_TILES = [
+    { id: "top-songs", title: "TOP SONGS", path: "/top-songs" },
+    { id: "popular-artists", title: "POPULAR ARTISTS AROUND THE WORLD", path: "/popular-artists" },
+    { id: "popular-playlists", title: "POPULAR PLAYLISTS", path: "/popular-playlists" },
+    { id: "new-releases", title: "NEW RELEASES", path: "/new-releases" },
+  ];
+
   const filteredSongs = useMemo(() => {
     const q = query.trim().toLowerCase();
     const list = activeGenre?.songs ?? [];
@@ -314,6 +336,66 @@ export default function Library() {
         s.title.toLowerCase().includes(q)
     );
   }, [query, activeGenre]);
+
+  // ✅ Section 1 previews (genre-aware)
+  const section1TilesWithPreview = useMemo(() => {
+    const songs = activeGenre?.songs ?? [];
+
+    const topSongs = songs.slice(0, 3).map((s) => `${s.artist} — ${s.title}`);
+    const artists = [...new Set(songs.map((s) => s.artist))].slice(0, 3);
+
+    const playlists = songs.slice(0, 3).map((s) => `${s.title}`);
+    const newReleases = songs.slice(-3).reverse().map((s) => `${s.artist} — ${s.title}`);
+
+    return SECTION1_TILES.map((tile) => {
+      if (tile.id === "top-songs") return { ...tile, preview: topSongs };
+      if (tile.id === "popular-artists") return { ...tile, preview: artists };
+      if (tile.id === "popular-playlists") return { ...tile, preview: playlists };
+      if (tile.id === "new-releases") return { ...tile, preview: newReleases };
+      return { ...tile, preview: [] };
+    });
+  }, [activeGenre]);
+
+  // ✅ Section 2 previews (genre-aware)
+  const section2PillsWithPreview = useMemo(() => {
+    const songs = activeGenre?.songs ?? [];
+    const artists = [...new Set(songs.map((s) => s.artist))];
+
+    return SECTION2_PILLS.map((pill) => {
+      let preview = [];
+
+      if (pill.id === "trending-artists") {
+        preview = artists.slice(0, 3);
+      } else if (pill.id === "sweet-90s") {
+        preview = songs.slice(0, 3).map((s) => s.title);
+      } else if (pill.id === "street-hits") {
+        preview = songs.slice(3, 6).map((s) => s.title);
+      } else if (pill.id === "party-starters") {
+        preview = songs.slice(6, 9).map((s) => s.title);
+      }
+
+      return { ...pill, preview };
+    });
+  }, [activeGenre]);
+
+  // ✅ NEW: Section 3 previews (genre-aware)
+  const section3MoodsWithPreview = useMemo(() => {
+    const songs = activeGenre?.songs ?? [];
+
+    // simple slicing rules for now (later you can tag songs by mood)
+    const love = songs.slice(0, 4).map((s) => s.title);
+    const heartbreak = songs.slice(4, 8).map((s) => s.title);
+    const gym = songs.slice(8, 12).map((s) => s.title);
+    const relax = songs.slice(12, 16).map((s) => s.title);
+
+    return SECTION3_MOODS.map((m) => {
+      if (m.id === "love") return { ...m, preview: love };
+      if (m.id === "heartbreak") return { ...m, preview: heartbreak };
+      if (m.id === "gym") return { ...m, preview: gym };
+      if (m.id === "relax") return { ...m, preview: relax };
+      return { ...m, preview: [] };
+    });
+  }, [activeGenre]);
 
   useEffect(() => {
     return () => {
@@ -379,9 +461,8 @@ export default function Library() {
         </div>
 
         <div className="mt-6 max-w-md mx-auto">
-  <SearchBar onSearch={(q) => setQuery(q)} />
-</div>
-
+          <SearchBar onSearch={(q) => setQuery(q)} />
+        </div>
 
         <div className="mt-8 max-w-md mx-auto">
           <div
@@ -459,7 +540,6 @@ export default function Library() {
                       {song.title}
                     </p>
 
-                    {/* genre line (only shows if song has it) */}
                     {"genre" in song && (
                       <p className="text-white/60 text-[10px] mt-1">
                         {song.genre}
@@ -475,6 +555,134 @@ export default function Library() {
                 No results for “{query}”
               </p>
             )}
+          </div>
+        </div>
+
+        {/* ✅ SECTION 1 — AFTER songs list (tiles) */}
+        <div className="mt-10 max-w-md mx-auto px-4">
+          <div className="flex gap-5 overflow-x-auto scrollbar-hide pb-2">
+            {section1TilesWithPreview.map((tile) => (
+              <button
+                key={tile.id}
+                onClick={() =>
+                  navigate(tile.path, { state: { genre: activeGenre } })
+                }
+                className="
+                  min-w-[240px] h-40
+                  bg-[#CFFFFF]
+                  rounded-2xl
+                  p-4
+                  text-black
+                  flex flex-col
+                  justify-between
+                  transition
+                  hover:scale-[1.02]
+                  active:scale-95
+                "
+              >
+                <div className="text-left">
+                  <p className="font-black text-[13px] leading-tight">
+                    {tile.title}
+                  </p>
+                  <p className="text-[10px] font-bold opacity-70 mt-1">
+                    {activeGenre?.name}
+                  </p>
+                </div>
+
+                <div className="text-left space-y-1">
+                  {(tile.preview ?? []).slice(0, 3).map((line, i) => (
+                    <p key={i} className="text-[10px] font-semibold truncate">
+                      • {line}
+                    </p>
+                  ))}
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+      {/* ✅ SECTION 2 — EVERYONE IS LISTENING TO (NEW DESIGN: compact chips) */}
+<div className="mt-10 max-w-md mx-auto px-4">
+  <h2 className="text-[#00FFFF] text-sm font-extrabold mb-4">
+    EVERYONE IS LISTENING TO
+  </h2>
+
+  <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
+    {section2PillsWithPreview.map((pill) => (
+      <button
+        key={pill.id}
+        type="button"
+        onClick={() => navigate(pill.path, { state: { genre: activeGenre } })}
+        className="
+          shrink-0
+          min-w-[170px]
+          rounded-xl
+          px-4 py-3
+          bg-[#CFFFFF]
+          text-black
+          text-left
+          transition
+          hover:scale-[1.02]
+          active:scale-95
+        "
+      >
+        <div className="flex items-center justify-between gap-3">
+          <p className="font-black text-[11px] leading-tight">{pill.title}</p>
+          <span className="text-[10px] font-black opacity-70">›</span>
+        </div>
+
+        <p className="text-[10px] font-semibold opacity-70 mt-2 truncate">
+          {(pill.preview ?? []).join(" • ")}
+        </p>
+      </button>
+    ))}
+  </div>
+</div>
+
+        {/* ✅ SECTION 3 — FIND YOUR MOOD (different style) */}
+        <div className="mt-10 max-w-md mx-auto px-4">
+          <h2 className="text-[#00FFFF] text-sm font-extrabold mb-4">
+            FIND YOUR MOOD
+          </h2>
+
+          <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
+            {section3MoodsWithPreview.map((mood) => (
+              <button
+                key={mood.id}
+                type="button"
+                onClick={() =>
+                  navigate(mood.path, { state: { genre: activeGenre } })
+                }
+                className="
+                  shrink-0
+                  min-w-[210px]
+                  rounded-2xl
+                  border border-white/10
+                  bg-gradient-to-br from-[#0b0b0b] to-black
+                  p-4
+                  text-left
+                  transition
+                  hover:scale-[1.02]
+                  active:scale-95
+                "
+              >
+                <p className="text-[#CFFFFF] font-black text-[12px]">
+                  {mood.title}
+                </p>
+
+                <p className="text-white/50 text-[10px] font-semibold mt-1 truncate">
+                  {activeGenre?.name}
+                </p>
+
+                <div className="mt-3 space-y-1">
+                  {(mood.preview ?? []).slice(0, 3).map((t, i) => (
+                    <p key={i} className="text-[#00FFFF] text-[10px] font-semibold truncate">
+                      • {t}
+                    </p>
+                  ))}
+                </div>
+              </button>
+            ))}
           </div>
         </div>
       </div>
