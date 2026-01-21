@@ -3,6 +3,9 @@ import { FiSearch } from "react-icons/fi";
 import { BiSolidMicrophone } from "react-icons/bi";
 import logo from "../assets/BD-RYTHM-logo.png";
 import { useNavigate } from "react-router-dom";
+import PlayerBar from "../components/PlayerBar";
+import SearchBar from "../components/SearchBar";
+
 
 const expandSongs = (base, count = 25) =>
   Array.from({ length: count }).map((_, i) => {
@@ -47,59 +50,54 @@ const GENRES = [
       { artist: "Scorpion Kings", title: "Amathole" },
     ]),
   },
-
   {
-  id: "afrosounds",
-  name: "Afro Sounds",
-  songs: expandSongs([
-    { artist: "Burna Boy", title: "Ye" },
-    { artist: "Wizkid", title: "Ojuelegba" },
-    { artist: "Davido", title: "Fall" },
-    { artist: "Rema", title: "Dumebi" },
-    { artist: "Ayra Starr", title: "Away" },
-    { artist: "Fireboy DML", title: "Jealous" },
-    { artist: "Omah Lay", title: "Bad Influence" },
-    { artist: "Asake", title: "Joha" },
-    { artist: "Tekno", title: "Pana" },
-    { artist: "Stonebwoy", title: "Activate" },
-  ]),
-},
-
+    id: "afrosounds",
+    name: "Afro Sounds",
+    songs: expandSongs([
+      { artist: "Burna Boy", title: "Ye" },
+      { artist: "Wizkid", title: "Ojuelegba" },
+      { artist: "Davido", title: "Fall" },
+      { artist: "Rema", title: "Dumebi" },
+      { artist: "Ayra Starr", title: "Away" },
+      { artist: "Fireboy DML", title: "Jealous" },
+      { artist: "Omah Lay", title: "Bad Influence" },
+      { artist: "Asake", title: "Joha" },
+      { artist: "Tekno", title: "Pana" },
+      { artist: "Stonebwoy", title: "Activate" },
+    ]),
+  },
   {
-  id: "caribbean",
-  name: "Caribbean / Reggaeton",
-  songs: expandSongs([
-    { artist: "Bad Bunny", title: "Tití Me Preguntó" },
-    { artist: "Daddy Yankee", title: "Gasolina" },
-    { artist: "J Balvin", title: "Mi Gente" },
-    { artist: "Karol G", title: "Bichota" },
-    { artist: "Ozuna", title: "Se Preparó" },
-    { artist: "Rauw Alejandro", title: "Todo De Ti" },
-    { artist: "Don Omar", title: "Danza Kuduro" },
-    { artist: "Nicky Jam", title: "El Perdón" },
-    { artist: "Sean Paul", title: "Temperature" },
-    { artist: "Farruko", title: "Pepas" },
-  ]),
-},
-
-
+    id: "caribbean",
+    name: "Caribbean / Reggaeton",
+    songs: expandSongs([
+      { artist: "Bad Bunny", title: "Tití Me Preguntó" },
+      { artist: "Daddy Yankee", title: "Gasolina" },
+      { artist: "J Balvin", title: "Mi Gente" },
+      { artist: "Karol G", title: "Bichota" },
+      { artist: "Ozuna", title: "Se Preparó" },
+      { artist: "Rauw Alejandro", title: "Todo De Ti" },
+      { artist: "Don Omar", title: "Danza Kuduro" },
+      { artist: "Nicky Jam", title: "El Perdón" },
+      { artist: "Sean Paul", title: "Temperature" },
+      { artist: "Farruko", title: "Pepas" },
+    ]),
+  },
   {
-  id: "gospel",
-  name: "Gospel",
-  songs: expandSongs([
-    { artist: "Kirk Franklin", title: "I Smile" },
-    { artist: "CeCe Winans", title: "Goodness of God" },
-    { artist: "Tasha Cobbs Leonard", title: "Break Every Chain" },
-    { artist: "Sinach", title: "Way Maker" },
-    { artist: "Nathaniel Bassey", title: "Imela" },
-    { artist: "William McDowell", title: "Withholding Nothing" },
-    { artist: "Travis Greene", title: "Intentional" },
-    { artist: "Donnie McClurkin", title: "We Fall Down" },
-    { artist: "Maverick City Music", title: "Jireh" },
-    { artist: "Elevation Worship", title: "Graves Into Gardens" },
-  ]),
-},
-
+    id: "gospel",
+    name: "Gospel",
+    songs: expandSongs([
+      { artist: "Kirk Franklin", title: "I Smile" },
+      { artist: "CeCe Winans", title: "Goodness of God" },
+      { artist: "Tasha Cobbs Leonard", title: "Break Every Chain" },
+      { artist: "Sinach", title: "Way Maker" },
+      { artist: "Nathaniel Bassey", title: "Imela" },
+      { artist: "William McDowell", title: "Withholding Nothing" },
+      { artist: "Travis Greene", title: "Intentional" },
+      { artist: "Donnie McClurkin", title: "We Fall Down" },
+      { artist: "Maverick City Music", title: "Jireh" },
+      { artist: "Elevation Worship", title: "Graves Into Gardens" },
+    ]),
+  },
   {
     id: "trap",
     name: "Trap",
@@ -256,7 +254,7 @@ const GENRES = [
       { artist: "Ozuna", title: "Se Preparó" },
       { artist: "Luis Fonsi", title: "Despacito" },
       { artist: "Shakira", title: "Hips Don't Lie" },
-      { artist: "Maluma", title: "Felices los 4" },
+      { artist: "Maluma", title: "Felices the 4" },
       { artist: "Don Omar", title: "Danza Kuduro" },
     ]),
   },
@@ -282,7 +280,7 @@ const GENRES = [
     songs: expandSongs([
       { artist: "Beethoven", title: "Symphony No. 5" },
       { artist: "Mozart", title: "Eine kleine Nachtmusik" },
-      { artist: "Bach", title: "Toccata and Fugue in D minor" },
+      { artist: "Bach", title: "Toccata and fugue in D minor" },
       { artist: "Vivaldi", title: "The Four Seasons: Spring" },
       { artist: "Tchaikovsky", title: "Swan Lake" },
       { artist: "Chopin", title: "Nocturne Op. 9 No. 2" },
@@ -373,94 +371,115 @@ export default function Library() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white px-6 pt-6 pb-10">
-      <div className="flex justify-end">
-        <img src={logo} alt="BD Rhythm Logo" className="w-16 md:w-20" />
-      </div>
+    <div className="min-h-screen bg-black text-white flex flex-col">
+      {/* content wrapper so PlayerBar can sit at bottom */}
+      <div className="flex-1 px-6 pt-6 pb-28">
+        <div className="flex justify-end">
+          <img src={logo} alt="BD Rhythm Logo" className="w-16 md:w-20" />
+        </div>
 
-      <div className="mt-6 flex items-center bg-[#CFFFFF] rounded-xl px-4 py-3 justify-between max-w-md mx-auto">
-        <FiSearch className="text-black" size={18} />
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          type="text"
-          placeholder="Artists, Songs, Lyrics and More"
-          className="flex-1 mx-3 bg-transparent outline-none text-black placeholder-black/60 text-[11px] sm:text-sm font-semibold"
-        />
-        <BiSolidMicrophone className="text-black" size={20} />
-      </div>
+        <div className="mt-6 max-w-md mx-auto">
+  <SearchBar onSearch={(q) => setQuery(q)} />
+</div>
 
-      <div className="mt-8 max-w-md mx-auto">
-        <div
-          ref={scrollerRef}
-          onScroll={onScroll}
-          className="flex gap-6 overflow-x-auto px-4 pb-4 scrollbar-hide snap-x snap-mandatory"
-          style={{ WebkitOverflowScrolling: "touch" }}
-        >
-          <div className="shrink-0 w-12" />
 
-          {GENRES.map((g, idx) => {
-            const isActive = idx === activeIndex;
+        <div className="mt-8 max-w-md mx-auto">
+          <div
+            ref={scrollerRef}
+            onScroll={onScroll}
+            className="flex gap-3 overflow-x-auto px-4 pb-4 scrollbar-hide snap-x snap-mandatory"
+            style={{ WebkitOverflowScrolling: "touch" }}
+          >
+            <div className="shrink-0 w-12" />
 
-            return (
-              <button
-                key={g.id}
-                type="button"
-                onClick={() => scrollToIndex(idx)}
-                className="shrink-0 text-left snap-center focus:outline-none"
-                ref={(el) => {
-                  itemRefs.current[idx] = el;
-                }}
-              >
-                <p className="text-[#00FFFF] text-xs font-bold mb-2">
-                  {g.name}
-                </p>
+            {GENRES.map((g, idx) => {
+              const isActive = idx === activeIndex;
 
-                <div
-                  className={[
-                    "bg-[#CFFFFF] rounded-2xl transition-transform duration-200",
-                    "w-28 h-28 sm:w-32 sm:h-32",
-                    isActive
-                      ? "scale-125 ring-2 ring-[#00FFFF]"
-                      : "scale-95 opacity-90",
-                  ].join(" ")}
-                />
-              </button>
-            );
-          })}
+              return (
+                <button
+                  key={g.id}
+                  type="button"
+                  onClick={() => scrollToIndex(idx)}
+                  className="relative shrink-0 snap-center focus:outline-none"
+                  ref={(el) => {
+                    itemRefs.current[idx] = el;
+                  }}
+                >
+                  <p className="sr-only">{g.name}</p>
 
-          <div className="shrink-0 w-12" />
+                  <div
+                    className={[
+                      "px-5 h-9 rounded-full font-bold text-[11px] whitespace-nowrap flex items-center justify-center",
+                      "transition duration-200",
+                      isActive
+                        ? "bg-[#00EFFF] text-black scale-105"
+                        : "bg-[#CFFFFF] text-black/80 hover:scale-105 active:scale-95",
+                    ].join(" ")}
+                  >
+                    {g.name}
+                  </div>
+                </button>
+              );
+            })}
+
+            <div className="shrink-0 w-12" />
+          </div>
+        </div>
+
+        <h2 className="mt-6 text-center text-[#00FFFF] text-sm font-extrabold">
+          {activeGenre?.name}
+        </h2>
+
+        {/* ✅ SONGS: horizontal scrolling columns (your layout) */}
+        <div className="mt-6 max-w-md mx-auto px-4">
+          <div className="overflow-x-auto scrollbar-hide pb-4">
+            <div
+              className="
+                grid grid-rows-4 grid-flow-col
+                auto-cols-[220px]
+                gap-x-12 gap-y-8
+              "
+            >
+              {filteredSongs.map((song) => (
+                <button
+                  key={song.id}
+                  type="button"
+                  onClick={() => navigate("/home", { state: { track: song } })}
+                  className="flex items-start gap-4 text-left w-full"
+                >
+                  {/* small cover */}
+                  <div className="w-12 h-12 bg-[#CFFFFF] rounded-md shrink-0" />
+
+                  {/* text */}
+                  <div className="leading-tight">
+                    <p className="text-[#00FFFF] text-sm font-bold">
+                      {song.artist}
+                    </p>
+                    <p className="text-[#00FFFF] text-sm font-semibold">
+                      {song.title}
+                    </p>
+
+                    {/* genre line (only shows if song has it) */}
+                    {"genre" in song && (
+                      <p className="text-white/60 text-[10px] mt-1">
+                        {song.genre}
+                      </p>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {filteredSongs.length === 0 && (
+              <p className="text-center text-white/60 text-sm mt-6">
+                No results for “{query}”
+              </p>
+            )}
+          </div>
         </div>
       </div>
 
-      <h2 className="mt-6 text-center text-[#00FFFF] text-sm font-extrabold">
-        {activeGenre?.name}
-      </h2>
-
-      <div className="mt-6 flex flex-col gap-7 max-w-md mx-auto px-4">
-        {filteredSongs.map((song) => (
-          <button
-            key={song.id}
-            type="button"
-            onClick={() => navigate("/home", { state: { track: song } })}
-            className="flex items-center gap-4 text-left w-full"
-          >
-            <div className="w-12 h-12 bg-[#CFFFFF] rounded-md" />
-            <div className="leading-tight">
-              <p className="text-[#00FFFF] text-sm font-bold">{song.artist}</p>
-              <p className="text-[#00FFFF] text-sm font-semibold">
-                {song.title}
-              </p>
-            </div>
-          </button>
-        ))}
-
-        {filteredSongs.length === 0 && (
-          <p className="text-center text-white/60 text-sm">
-            No results for “{query}”
-          </p>
-        )}
-      </div>
+      <PlayerBar />
     </div>
   );
 }

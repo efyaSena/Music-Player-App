@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import BottomNav from "../components/BottomNav";
+
 
 export default function TopAlbums() {
   const navigate = useNavigate();
@@ -38,13 +40,13 @@ export default function TopAlbums() {
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
       <div className="flex-1 px-6 pt-6 pb-6 max-w-md mx-auto w-full">
-        <button
+       <button
           type="button"
           onClick={() => navigate(-1)}
           className="text-[#00FFFF] text-2xl font-black transition duration-200 hover:scale-110 active:scale-95"
           aria-label="Back"
         >
-          ‹
+          «
         </button>
 
         {/* chips like your design */}
@@ -57,13 +59,15 @@ export default function TopAlbums() {
                 type="button"
                 onClick={() => setActiveGenre(g)}
                 className={[
-                  "shrink-0 h-6 w-24 rounded-full transition duration-200 hover:scale-105 active:scale-95",
-                  isActive ? "bg-[#00EFFF]" : "bg-[#00EFFF]/80",
+                  // ⬇️ CHANGED: removed fixed w-24 so text can fit; added px-4 and text styles
+                  "shrink-0 h-6 px-4 rounded-full transition duration-200 hover:scale-105 active:scale-95 whitespace-nowrap text-[10px] font-bold",
+                  isActive ? "bg-[#00EFFF] text-black" : "bg-[#00EFFF]/80 text-black/80",
                 ].join(" ")}
                 title={g}
                 aria-label={g}
               >
-                {/* keep blank to match your mock */}
+                {/* ✅ ADDED THIS LINE (this is what makes the genre show) */}
+                {g}
               </button>
             );
           })}
@@ -101,7 +105,8 @@ export default function TopAlbums() {
         </div>
       </div>
 
-      <div className="h-20 bg-[#00EFFF]" />
+      <BottomNav />
+
     </div>
   );
 }

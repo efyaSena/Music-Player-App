@@ -189,8 +189,7 @@ export default function TrendingSongs() {
         </div>
       </div>
 
-      <div className="h-20 bg-[#00EFFF]" />
-
+    
       <BottomNav />
 
     </div>

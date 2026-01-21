@@ -4,9 +4,34 @@ import logo from "../assets/BD-RYTHM-logo.png";
 import PlayerBar from "../components/PlayerBar";
 import PlaylistSheet from "../components/PlaylistSheet";
 
+const AlbumTile = ({ title, artist, genre, onClick }) => {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="relative w-[120px] h-[90px] shrink-0 text-left transition-transform hover:scale-[1.02] active:scale-95"
+    >
+      {/* back cyan layer */}
+      <div className="absolute inset-0 translate-x-2 translate-y-2 rounded-2xl bg-[#00EFFF]" />
+
+      {/* front card */}
+      <div className="absolute inset-0 rounded-2xl bg-[#D9FFFF] px-3 py-3 flex flex-col justify-end">
+        <p className="font-extrabold text-black text-[11px] leading-tight line-clamp-2">
+          {title}
+        </p>
+        <p className="text-black text-[9px] mt-[2px] leading-tight">{artist}</p>
+        <p className="text-black/70 text-[8px] mt-[1px] leading-tight">{genre}</p>
+      </div>
+    </button>
+  );
+};
+
+
+
 export default function HomePage() {
   const navigate = useNavigate();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+
 
   const trendingSongs = useMemo(
     () => [

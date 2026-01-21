@@ -1,35 +1,60 @@
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-const PlayerBar = () => {
+import homeIcon from "../assets/home-button.png";
+import musicIcon from "../assets/music-icon.png";
+import recorderIcon from "../assets/voice-recorder.png";
+import searchIcon from "../assets/search-button.png";
+
+const BottomNav = () => {
+  const navigate = useNavigate();
+  const [, setActive] = useState("home");
+
   return (
-    <div className="w-full bg-black px-4 py-3 border-t border-gray-800 mt-auto">
-
-    
-      <div className="flex justify-around items-center text-center">
-
-        <button className="flex flex-col items-center">
-          <img src="/assets/home-button.png" className="h-6" alt="" />
-          <p className="text-[10px] mt-[2px]">Home</p>
+    <div className="w-full bg-[#00EFFF] px-4 h-20 flex items-center">
+      <div className="w-full flex justify-around items-center text-center text-black">
+        <button
+          onClick={() => {
+            setActive("home");
+            navigate("/home");
+          }}
+        >
+          <img src={homeIcon} className="h-6" alt="Home" />
+          <p className="text-[10px] mt-1">Home</p>
         </button>
 
-        <button className="flex flex-col items-center">
-          <img src="/assets/music-icon.png" className="h-6" alt="" />
-          <p className="text-[10px] mt-[2px]">Library</p>
+        <button
+          onClick={() => {
+            setActive("library");
+            navigate("/library");
+          }}
+        >
+          <img src={musicIcon} className="h-6" alt="Library" />
+          <p className="text-[10px] mt-1">Library</p>
         </button>
 
-        <button className="flex flex-col items-center">
-          <img src="/assets/voice-recorder.png" className="h-6" alt="" />
-          <p className="text-[10px] mt-[2px]">Audio Recorder</p>
+        <button
+          onClick={() => {
+            setActive("record");
+            navigate("/recorder"); // ✅ Audio Recorder page
+          }}
+        >
+          <img src={recorderIcon} className="h-6" alt="Recorder" />
+          <p className="text-[10px] mt-1">Recorder</p>
         </button>
 
-        <button className="flex flex-col items-center">
-          <img src="/assets/search-button.png" className="h-6" alt="" />
-          <p className="text-[10px] mt-[2px]">Search</p>
+        <button
+          onClick={() => {
+            setActive("search");
+            navigate("/search"); // ✅ Search page
+          }}
+        >
+          <img src={searchIcon} className="h-6" alt="Search" />
+          <p className="text-[10px] mt-1">Search</p>
         </button>
-
       </div>
     </div>
   );
 };
 
-export default PlayerBar;
+export default BottomNav;

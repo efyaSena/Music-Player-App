@@ -1,22 +1,39 @@
-import React from "react";
+import { FiSearch } from "react-icons/fi";
+import { BiSolidMicrophone } from "react-icons/bi";
+import { useState } from "react";
 
-const SearchBar = () => {
+const SearchBar = ({ onSearch }) => {
+  const [value, setValue] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSearch(value);
+  };
+
   return (
-    <div className="relative w-full">
+    <form
+      onSubmit={handleSubmit}
+      className="flex items-center bg-[#CFFFFF] rounded-xl px-4 py-3 gap-3"
+    >
+      {/* search icon */}
+      <button type="submit">
+        <FiSearch className="text-black" size={18} />
+      </button>
 
-     
-      <img 
-        src="/assets/search-button.png" 
-        className="h-4 absolute left-3 top-3"
-        alt="search-icon" 
-      />
-
+      {/* input */}
       <input
         type="text"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
         placeholder="Artists, Songs, Lyrics and more"
-        className="w-full bg-white text-black rounded-md py-2 pl-10 pr-3 text-sm"
+        className="flex-1 bg-transparent outline-none text-black placeholder-black/60 text-[11px] sm:text-sm font-semibold"
       />
-    </div>
+
+      {/* mic icon (placeholder for now) */}
+      <button type="button">
+        <BiSolidMicrophone className="text-black" size={20} />
+      </button>
+    </form>
   );
 };
 
