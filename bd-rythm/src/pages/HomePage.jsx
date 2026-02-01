@@ -1,8 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/BD-RYTHM-logo.png";
-import PlayerBar from "../components/PlayerBar";
-import PlaylistSheet from "../components/PlaylistSheet";
 
 const AlbumTile = ({ title, artist, genre, onClick }) => {
   return (
@@ -26,56 +24,32 @@ const AlbumTile = ({ title, artist, genre, onClick }) => {
   );
 };
 
-
-
 export default function HomePage() {
   const navigate = useNavigate();
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
+  // ✅ GENRES must be inside component (hooks rule)
+  const GENRES = useMemo(
+    () => ["All", "Afrobeat", "Amapiano", "Hip-hop", "Pop", "Rock", "R&B", "Reggae", "K-Pop"],
+    []
+  );
+
+  const [activeGenre, setActiveGenre] = useState("All");
 
   const trendingSongs = useMemo(
     () => [
-      // Afro / Afrobeats
       { id: "t1", artist: "Burna Boy", title: "Last Last", genre: "Afrobeat" },
       { id: "t2", artist: "Ayra Starr", title: "Rush", genre: "Afrobeat" },
-
-      // Amapiano
       { id: "t3", artist: "Tyler ICU", title: "Mnike", genre: "Amapiano" },
       { id: "t4", artist: "Kabza De Small", title: "Sponono", genre: "Amapiano" },
-
-      // Hip-hop
-      {
-        id: "t5",
-        artist: "Drake",
-        title: "First Person Shooter",
-        genre: "Hip-hop",
-      },
+      { id: "t5", artist: "Drake", title: "First Person Shooter", genre: "Hip-hop" },
       { id: "t6", artist: "Travis Scott", title: "FE!N", genre: "Hip-hop" },
-
-      // Pop
       { id: "t7", artist: "Taylor Swift", title: "Cruel Summer", genre: "Pop" },
       { id: "t8", artist: "The Weeknd", title: "Popular", genre: "Pop" },
-
-      // R&B
       { id: "t9", artist: "SZA", title: "Kill Bill", genre: "R&B" },
       { id: "t10", artist: "Brent Faiyaz", title: "Best Time", genre: "R&B" },
-
-      // EDM
-      { id: "t11", artist: "Calvin Harris", title: "Miracle", genre: "EDM" },
-
-      // Reggae / Caribbean
-      { id: "t12", artist: "Sean Paul", title: "Temperature", genre: "Reggae" },
-
-      // Gospel
-      { id: "t13", artist: "Maverick City", title: "Jireh", genre: "Gospel" },
-
-      // Rock / Indie
-      {
-        id: "t14",
-        artist: "Arctic Monkeys",
-        title: "I Wanna Be Yours",
-        genre: "Indie",
-      },
+      { id: "t11", artist: "Sean Paul", title: "Temperature", genre: "Reggae" },
+      { id: "t12", artist: "BLACKPINK", title: "Pink Venom", genre: "K-Pop" },
+      { id: "t13", artist: "Pink Floyd", title: "Time", genre: "Rock" },
     ],
     []
   );
@@ -88,13 +62,68 @@ export default function HomePage() {
       { id: "a4", name: "Renaissance", artist: "Beyoncé", genre: "Pop" },
       { id: "a5", name: "After Hours", artist: "The Weeknd", genre: "Pop" },
       { id: "a6", name: "Born Pink", artist: "BLACKPINK", genre: "K-Pop" },
-      { id: "a7", name: "÷ (Divide)", artist: "Ed Sheeran", genre: "Pop" },
       { id: "a8", name: "Amapiano Hits", artist: "Various", genre: "Amapiano" },
       { id: "a9", name: "Legend", artist: "Bob Marley", genre: "Reggae" },
       { id: "a10", name: "Dark Side", artist: "Pink Floyd", genre: "Rock" },
     ],
     []
   );
+
+  // ✅ NEW: TRENDING ARTISTS (for circles)
+  const trendingArtists = useMemo(
+    () => [
+      { id: "ta1", name: "Seyi Vibez", genre: "Afrobeat" },
+      { id: "ta2", name: "Omah Lay", genre: "Afrobeat" },
+      { id: "ta3", name: "Young Jonn", genre: "Afrobeat" },
+      { id: "ta4", name: "Kabza De Small", genre: "Amapiano" },
+      { id: "ta5", name: "Tyler ICU", genre: "Amapiano" },
+      { id: "ta6", name: "Drake", genre: "Hip-hop" },
+      { id: "ta7", name: "Travis Scott", genre: "Hip-hop" },
+      { id: "ta8", name: "SZA", genre: "R&B" },
+      { id: "ta9", name: "BLACKPINK", genre: "K-Pop" },
+      { id: "ta10", name: "Bob Marley", genre: "Reggae" },
+      { id: "ta11", name: "Pink Floyd", genre: "Rock" },
+    ],
+    []
+  );
+
+  // ✅ NEW: DAILY TOP 100 cards (boxes) – generated from GENRES
+  const dailyTop100Cards = useMemo(() => {
+    const picks = GENRES.filter((g) => g !== "All");
+    const base = [
+      { id: "d-global", label: "Top 100: Global", genre: "All" },
+      { id: "d-usa", label: "Top 100: USA", genre: "All" },
+    ];
+    const fromGenres = picks.map((g) => ({
+      id: `d-${g}`,
+      label: `Top 100: ${g}`,
+      genre: g,
+    }));
+    return [...base, ...fromGenres];
+  }, [GENRES]);
+
+  // ✅ FILTERS: same behavior as Library
+  const filteredTrending = useMemo(() => {
+    if (activeGenre === "All") return trendingSongs;
+    return trendingSongs.filter((s) => s.genre === activeGenre);
+  }, [trendingSongs, activeGenre]);
+
+  const filteredAlbums = useMemo(() => {
+    if (activeGenre === "All") return topAlbums;
+    return topAlbums.filter((a) => a.genre === activeGenre);
+  }, [topAlbums, activeGenre]);
+
+  // ✅ NEW FILTERS: artists + daily top100 obey pills
+  const filteredArtists = useMemo(() => {
+    if (activeGenre === "All") return trendingArtists;
+    return trendingArtists.filter((a) => a.genre === activeGenre);
+  }, [trendingArtists, activeGenre]);
+
+  const filteredDailyTop100 = useMemo(() => {
+    if (activeGenre === "All") return dailyTop100Cards;
+    // show Global + USA + the selected genre
+    return dailyTop100Cards.filter((c) => c.genre === "All" || c.genre === activeGenre);
+  }, [dailyTop100Cards, activeGenre]);
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
@@ -103,24 +132,41 @@ export default function HomePage() {
           <img src={logo} alt="BD Rhythm Logo" className="w-40" />
         </div>
 
-        <div className="mt-10 max-w-md mx-auto">
-          <PlayerBar onOpenMenu={() => setIsSheetOpen(true)} />
+        {/* ✅ GENRE PILLS MOVED HERE (TOP of HOME) */}
+        <div className="mt-6 max-w-md mx-auto">
+          <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
+            {GENRES.map((g) => (
+              <button
+                key={g}
+                type="button"
+                onClick={() => setActiveGenre(g)}
+                className={[
+                  "shrink-0 px-5 h-8 rounded-full text-[10px] font-black transition duration-200",
+                  activeGenre === g
+                    ? "bg-[#00EFFF] text-black"
+                    : "bg-[#CFFFFF] text-black/80 hover:bg-[#00FFFF] hover:scale-105 active:scale-95",
+                ].join(" ")}
+              >
+                {g}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* TRENDING SECTION */}
-        <div className="mt-12 max-w-md mx-auto">
+        <div className="mt-10 max-w-md mx-auto">
           <p className="text-center text-[#00FFFF] text-xs font-bold">
             Trending this week
           </p>
 
           <div className="mt-2 flex items-center justify-between">
             <p className="text-[#00FFFF] text-[10px] font-bold">
-              (trending songs)
+              (trending songs) {activeGenre !== "All" ? `• ${activeGenre}` : ""}
             </p>
 
             <button
               type="button"
-              onClick={() => navigate("/trending-songs")}
+              onClick={() => navigate("/trending-songs", { state: { genre: activeGenre } })}
               className="
                 bg-[#CFFFFF]
                 text-black
@@ -141,45 +187,52 @@ export default function HomePage() {
           </div>
 
           <div className="mt-3 flex gap-4 overflow-x-auto scrollbar-hide pb-2">
-  {trendingSongs.map((song) => (
-    <button
-      key={song.id}
-      type="button"
-      onClick={() => navigate("/home", { state: { track: song } })}
-      className="
-        shrink-0
-        px-4
-        h-7
-        rounded-full
-        bg-[#00EFFF]
-        text-black
-        text-[9px]
-        font-extrabold
-        flex items-center
-        transition
-        duration-200
-        hover:scale-105
-        active:scale-95
-      "
-      title={`${song.artist} • ${song.title}`}
-    >
-      <span className="truncate max-w-[120px]">
-        {song.artist} — {song.title}
-      </span>
-    </button>
-  ))}
-</div>
+            {filteredTrending.map((song) => (
+              <button
+                key={song.id}
+                type="button"
+                onClick={() => navigate("/home", { state: { track: song } })}
+                className="
+                  shrink-0
+                  px-4
+                  h-7
+                  rounded-full
+                  bg-[#00EFFF]
+                  text-black
+                  text-[9px]
+                  font-extrabold
+                  flex items-center
+                  transition
+                  duration-200
+                  hover:scale-105
+                  active:scale-95
+                "
+                title={`${song.artist} • ${song.title}`}
+              >
+                <span className="truncate max-w-[120px]">
+                  {song.artist} — {song.title}
+                </span>
+              </button>
+            ))}
 
+            {filteredTrending.length === 0 && (
+              <div className="text-white/60 text-xs py-2">
+                No songs for {activeGenre} yet.
+              </div>
+            )}
+          </div>
         </div>
 
         {/* TOP ALBUMS SECTION */}
         <div className="mt-8 max-w-md mx-auto">
           <div className="flex items-center justify-between">
-            <p className="text-[#00FFFF] text-[10px] font-bold">(top albums)</p>
+            <p className="text-[#00FFFF] text-[10px] font-bold">
+              (top albums) {activeGenre !== "All" ? `• ${activeGenre}` : ""}
+            </p>
 
             <button
               type="button"
-              onClick={() => navigate("/top-albums")}
+              onClick={() => navigate("/top-albums", { state: { genre: activeGenre } })}
               className="
                 bg-[#CFFFFF]
                 text-black
@@ -200,7 +253,7 @@ export default function HomePage() {
           </div>
 
           <div className="mt-4 flex gap-4 overflow-x-auto scrollbar-hide pb-2">
-            {topAlbums.map((album) => (
+            {filteredAlbums.map((album) => (
               <button
                 key={album.id}
                 type="button"
@@ -220,58 +273,147 @@ export default function HomePage() {
                 </div>
               </button>
             ))}
+
+            {filteredAlbums.length === 0 && (
+              <div className="text-white/60 text-xs py-2">
+                No albums for {activeGenre} yet.
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ✅ NEW: TRENDING ARTISTS (CIRCLES) – preview only */}
+        <div className="mt-10 max-w-md mx-auto">
+          <div className="flex items-center justify-between">
+            <p className="text-[#00FFFF] text-[10px] font-bold">
+              (trending artists) {activeGenre !== "All" ? `• ${activeGenre}` : ""}
+            </p>
+
+            <button
+              type="button"
+              onClick={() =>
+                navigate("/popular-artists", { state: { genre: activeGenre } })
+              }
+              className="
+                bg-[#CFFFFF]
+                text-black
+                text-[9px]
+                font-bold
+                px-3
+                py-1
+                rounded-full
+                transition
+                duration-200
+                hover:bg-[#00FFFF]
+                hover:scale-105
+                active:scale-95
+              "
+            >
+              view all
+            </button>
+          </div>
+
+          <div className="mt-4 flex gap-6 overflow-x-auto scrollbar-hide pb-2">
+            {filteredArtists.slice(0, 6).map((a) => (
+              <button
+                key={a.id}
+                type="button"
+                onClick={() =>
+                  navigate("/popular-artists", {
+                    state: { focus: a.name, genre: activeGenre },
+                  })
+                }
+                className="shrink-0 w-[90px] text-center"
+                title={a.name}
+              >
+                <div className="w-[82px] h-[82px] mx-auto rounded-full bg-[#CFFFFF] opacity-90 shadow-[0_0_0_3px_rgba(0,239,255,0.25)]" />
+                <p className="mt-2 text-white text-[10px] font-black truncate">
+                  {a.name}
+                </p>
+              </button>
+            ))}
+
+            {filteredArtists.length === 0 && (
+              <div className="text-white/60 text-xs py-2">
+                No artists for {activeGenre} yet.
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ✅ NEW: DAILY TOP 100 (BOXES) – preview only */}
+        <div className="mt-10 max-w-md mx-auto">
+          <div className="flex items-center justify-between">
+            <p className="text-[#00FFFF] text-[10px] font-bold">
+              Daily Top 100 {activeGenre !== "All" ? `• ${activeGenre}` : ""}
+            </p>
+
+            <button
+              type="button"
+              onClick={() =>
+                navigate("/top-songs", { state: { top100: true, genre: activeGenre } })
+              }
+              className="
+                bg-[#CFFFFF]
+                text-black
+                text-[9px]
+                font-bold
+                px-3
+                py-1
+                rounded-full
+                transition
+                duration-200
+                hover:bg-[#00FFFF]
+                hover:scale-105
+                active:scale-95
+              "
+            >
+              view all
+            </button>
+          </div>
+
+          <div className="mt-4 flex gap-4 overflow-x-auto scrollbar-hide pb-2">
+            {filteredDailyTop100.slice(0, 5).map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() =>
+                  navigate("/top-songs", {
+                    state: { top100: true, chart: c.label, genre: activeGenre },
+                  })
+                }
+                className="
+                  shrink-0
+                  w-[150px]
+                  rounded-2xl
+                  bg-white/10
+                  border
+                  border-white/10
+                  p-3
+                  text-left
+                  transition
+                  duration-200
+                  hover:bg-white/15
+                  active:scale-[0.98]
+                "
+                title={c.label}
+              >
+                <div className="w-full h-[90px] rounded-xl bg-white/10" />
+                <p className="mt-3 text-white font-black text-sm leading-tight line-clamp-2">
+                  {c.label}
+                </p>
+                <p className="text-white/60 text-xs mt-1">BD Rythm</p>
+              </button>
+            ))}
+
+            {filteredDailyTop100.length === 0 && (
+              <div className="text-white/60 text-xs py-2">
+                No charts for {activeGenre} yet.
+              </div>
+            )}
           </div>
         </div>
       </div>
-
-      {/* BOTTOM BAR */}
-      <div className="h-20 bg-[#00EFFF] flex items-center justify-between px-10">
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          aria-label="Back"
-          className="
-            w-12 h-12
-            flex items-center justify-center
-            rounded-full
-            bg-black
-            text-[#00EFFF]
-            text-3xl font-black
-            transition
-            duration-200
-            hover:scale-110
-            active:scale-95
-          "
-        >
-          ↩
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setIsSheetOpen(true)}
-          aria-label="Open playlist sheet"
-          className="
-            w-12 h-12
-            flex items-center justify-center
-            rounded-full
-            bg-black
-            text-[#00EFFF]
-            text-3xl font-black
-            transition
-            duration-200
-            hover:scale-110
-            active:scale-95
-          "
-        >
-          ≡+
-        </button>
-      </div>
-
-      {/* PLAYLIST SHEET */}
-      <PlaylistSheet
-        isOpen={isSheetOpen}
-        onClose={() => setIsSheetOpen(false)}
-      />
     </div>
   );
 }

@@ -28,7 +28,7 @@ function safeLoad() {
   }
 }
 
-export default function PlaylistSheet({ isOpen, onClose }) {
+export default function PlaylistSheet({ isOpen, onClose, song }) {
   const [mode, setMode] = useState("list"); // "list" | "create"
   const [search, setSearch] = useState("");
   const [name, setName] = useState("");
@@ -99,10 +99,10 @@ export default function PlaylistSheet({ isOpen, onClose }) {
   };
 
  const addToPlaylist = (playlist) => {
-  // later: add current track to this playlist
-  console.log("Add to playlist:", playlist.name); // temporary so eslint stops complaining
+  console.log("Add to playlist:", playlist.name, "Song:", song);
   closeAll();
 };
+
 
   if (!isOpen) return null;
 

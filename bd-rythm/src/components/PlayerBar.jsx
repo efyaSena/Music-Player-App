@@ -1,107 +1,101 @@
-import { useMemo, useRef, useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useMemo, useState } from "react";
+import { usePlayer } from "../context/usePlayer";
+import PlaylistSheet from "./PlaylistSheet";
 
 export default function PlayerBar() {
-  const location = useLocation();
+  const player = usePlayer();
 
-  const [open, setOpen] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const {
+    currentSong,
+    isPlaying,
+    togglePlay,
+    currentTime = 0,
+    duration = 0,
+    seek,
+    repeatOne,
+    setRepeatOne,
+  } = player || {};
 
-  // ✅ TEMP audio (replace later with real track URL)
-  const audioUrl = "/audio/sample.mp3";
-  const audioRef = useRef(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const [playlistOpen, setPlaylistOpen] = useState(false);
 
-  // ✅ TEMP playlist (replace later with real data)
-  const playlist = useMemo(
-    () => [
-      { id: "t1", artist: "Burna Boy", title: "Last Last" },
-      { id: "t2", artist: "Wizkid", title: "Essence" },
-      { id: "t3", artist: "Davido", title: "Unavailable" },
-      { id: "t4", artist: "Rema", title: "Calm Down" },
-    ],
-    []
-  );
+  const hasSong = !!currentSong;
+  const hasAudio = !!currentSong?.audio;
 
-  // track passed from Library/Home via navigate state
-  const initialTrack = location.state?.track;
+  const btn =
+    "transition duration-200 hover:scale-110 active:scale-95 hover:drop-shadow-[0_0_6px_#00FFFF]";
 
-  // ✅ keep ONLY a manual index for prev/next clicks
-  const [manualIndex, setManualIndex] = useState(0);
+  const prevDisabled = true;
+  const nextDisabled = true;
 
-  // ✅ derive an index from location.state without setState-in-effect
-  const derivedIndex = useMemo(() => {
-    if (!initialTrack) return null;
+  const formatTime = (t) => {
+    const n = Number(t);
+    if (!Number.isFinite(n) || n <= 0) return "0:00";
+    const m = Math.floor(n / 60);
+    const s = Math.floor(n % 60);
+    return `${m}:${String(s).padStart(2, "0")}`;
+  };
 
-    const found = playlist.findIndex(
-      (t) =>
-        t.artist?.toLowerCase() === initialTrack.artist?.toLowerCase() &&
-        t.title?.toLowerCase() === initialTrack.title?.toLowerCase()
-    );
+  // per-song storage key
+  const songKey = useMemo(() => {
+    if (!currentSong) return "no-song";
+    return `${currentSong.artist || "artist"}::${currentSong.title || "title"}`;
+  }, [currentSong]);
 
-    return found >= 0 ? found : 0;
-  }, [initialTrack, playlist]);
-
-  // ✅ decide which index to use:
-  // - if user clicked a song (derivedIndex exists), use it
-  // - else use manualIndex (for next/prev browsing)
-  const currentIndex = derivedIndex ?? manualIndex;
-  const currentTrack = playlist[currentIndex];
-
-  // ✅ When track changes AND we're playing, restart playback
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    audio.currentTime = 0;
-
-    if (isPlaying) {
-      audio.play().catch(() => setIsPlaying(false));
-    }
-  }, [currentIndex, isPlaying]);
-
-  // ✅ Play/Pause
-  const togglePlay = async () => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
+  // compute liked directly from localStorage (no effects needed)
+  const liked = useMemo(() => {
     try {
-      if (isPlaying) {
-        audio.pause();
-        setIsPlaying(false);
-      } else {
-        await audio.play();
-        setIsPlaying(true);
-      }
-    } catch (e) {
-      console.log("Play blocked until user interaction:", e);
+      return localStorage.getItem(`liked:${songKey}`) === "1";
+    } catch {
+      return false;
     }
+  }, [songKey]);
+
+ const toggleLike = () => {
+  try {
+    const next = !liked;
+    localStorage.setItem(`liked:${songKey}`, next ? "1" : "0");
+  } catch {
+    // ignore storage errors
+  }
+
+  // force rerender so UI updates immediately
+  setMenuOpen((v) => v);
+};
+
+
+  const handlePlayClick = () => {
+    if (!hasSong) return;
+    if (!hasAudio) return;
+    togglePlay?.();
   };
 
-  // ✅ Next/Prev (works even without initialTrack)
-  const nextTrack = () => {
-    setManualIndex((i) => (i + 1) % playlist.length);
+  // ✅ seek ONLY through provider
+  const handleSeek = (val) => {
+    const seconds = Number(val);
+    if (!Number.isFinite(seconds)) return;
+    seek?.(seconds);
   };
 
-  const prevTrack = () => {
-    setManualIndex((i) => (i - 1 + playlist.length) % playlist.length);
-  };
-
-  // ✅ Download handler
   const handleDownload = () => {
+    if (!hasAudio) return;
+
     const link = document.createElement("a");
-    link.href = audioUrl;
-    link.download = `${currentTrack?.artist || "BD-Rythm"}-${currentTrack?.title || "track"}.mp3`;
+    link.href = currentSong.audio;
+    link.download = `${currentSong?.artist || "BD-Rythm"}-${currentSong?.title || "track"}.mp3`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    setOpen(false);
+    setMenuOpen(false);
   };
 
-  // ✅ Share handler
   const handleShare = async () => {
     const shareData = {
       title: "Listening on BD Rythm 🎧",
-      text: `Check out: ${currentTrack?.artist || "BD Rythm"} - ${currentTrack?.title || "Track"}`,
+      text: currentSong
+        ? `Check out: ${currentSong.artist || "BD Rythm"} - ${currentSong.title || "Track"}`
+        : "Listening on BD Rythm 🎧",
       url: window.location.href,
     };
 
@@ -116,78 +110,311 @@ export default function PlayerBar() {
       console.error("Share failed:", err);
     }
 
-    setOpen(false);
+    setMenuOpen(false);
   };
 
-  const btn =
-    "transition duration-200 hover:scale-110 active:scale-95 hover:drop-shadow-[0_0_6px_#00FFFF]";
-
   return (
-    <div className="relative bg-[#CFFFFF] rounded-xl px-6 py-5 text-black">
-      {/* ✅ hidden audio element */}
-      <audio ref={audioRef} src={audioUrl} />
+    <>
+      {/* ✅ MINI PLAYER (CLEAN) */}
+      <div
+        className="fixed left-0 right-0 bottom-20 z-50 w-full bg-[#CFFFFF] px-6 py-4 text-black cursor-pointer"
+        onClick={() => {
+          setMenuOpen(false);
+          setExpanded(true);
+        }}
+      >
+        {/* dots + menu */}
+        <div className="absolute top-3 right-4">
+          <button
+            type="button"
+            className={`text-lg font-black leading-none ${btn}`}
+            aria-label="More options"
+            onClick={(e) => {
+              e.stopPropagation();
+              setMenuOpen((v) => !v);
+            }}
+          >
+            …
+          </button>
 
-      {/* dots + menu */}
-      <div className="absolute top-3 right-4">
-        <button
-          type="button"
-          className={`text-lg font-black leading-none ${btn}`}
-          aria-label="More options"
-          onClick={() => setOpen((v) => !v)}
-        >
-          …
-        </button>
+          {menuOpen && (
+            <>
+              <button
+                type="button"
+                className="fixed inset-0 z-50 bg-transparent"
+                onClick={() => setMenuOpen(false)}
+                aria-label="Close menu"
+              />
 
-        {open && (
-          <>
-            <button
-              type="button"
-              className="fixed inset-0 z-40 bg-transparent"
-              onClick={() => setOpen(false)}
-              aria-label="Close menu"
+              {/* ✅ ICON-ONLY 3 DOTS MENU (Playlist + Download + Share) */}
+              <div className="absolute right-0 bottom-full mb-2 z-[60] bg-[#CFFFFF] rounded-xl p-3 shadow-xl w-20 flex flex-col gap-2">
+                {/* Playlist */}
+                <button
+                  type="button"
+                  className={[
+                    "w-full h-12 rounded-lg grid place-items-center transition",
+                    "hover:bg-black/10 active:scale-95",
+                    !hasSong ? "opacity-50 pointer-events-none" : "",
+                  ].join(" ")}
+                  aria-label="Add to playlist"
+                  title="Add to playlist"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMenuOpen(false);
+                    setPlaylistOpen(true);
+                  }}
+                >
+                 <span className="relative w-6 h-6 inline-block">
+  {/* 3 lines */}
+  <span className="absolute left-0 top-[3px] w-4 h-[2px] bg-black rounded" />
+  <span className="absolute left-0 top-[10px] w-4 h-[2px] bg-black rounded" />
+  <span className="absolute left-0 top-[17px] w-4 h-[2px] bg-black rounded" />
+
+  {/* plus */}
+  <span className="absolute right-0 top-[8px] w-2.5 h-[2px] bg-black rounded" />
+  <span className="absolute right-[4px] top-[5px] w-[2px] h-2.5 bg-black rounded" />
+</span>
+
+                </button>
+
+                {/* Download */}
+                <button
+                  type="button"
+                  className={[
+                    "w-full h-12 rounded-lg grid place-items-center transition",
+                    "hover:bg-black/10 active:scale-95",
+                    !hasAudio ? "opacity-50 pointer-events-none" : "",
+                  ].join(" ")}
+                  aria-label="Download"
+                  title="Download"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDownload();
+                  }}
+                >
+                  <span className="text-xl">⬇️</span>
+                </button>
+
+                {/* Share */}
+                <button
+                  type="button"
+                  className="w-full h-12 rounded-lg grid place-items-center transition hover:bg-black/10 active:scale-95"
+                  aria-label="Share"
+                  title="Share"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleShare();
+                  }}
+                >
+                  <span className="text-xl">🔗</span>
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* title */}
+        <div className="text-center text-[10px] font-bold mb-2">
+          {!hasSong ? (
+            <span className="opacity-70">Select a song to start</span>
+          ) : (
+            <>
+              {currentSong?.artist} — {currentSong?.title}
+              {!hasAudio && <span className="ml-2 opacity-70">(No audio yet)</span>}
+            </>
+          )}
+        </div>
+
+        {/* mini controls only */}
+        <div className="flex items-center justify-center gap-10">
+          <button
+            type="button"
+            disabled={prevDisabled}
+            className={[
+              "text-sm font-black",
+              btn,
+              prevDisabled ? "opacity-40 pointer-events-none" : "",
+            ].join(" ")}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {"<<"}
+          </button>
+
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handlePlayClick();
+            }}
+            disabled={!hasSong || !hasAudio}
+            className={[
+              "text-base font-black",
+              btn,
+              !hasSong || !hasAudio ? "opacity-40 pointer-events-none" : "",
+            ].join(" ")}
+          >
+            {isPlaying ? "||" : "▶"}
+          </button>
+
+          <button
+            type="button"
+            disabled={nextDisabled}
+            className={[
+              "text-sm font-black",
+              btn,
+              nextDisabled ? "opacity-40 pointer-events-none" : "",
+            ].join(" ")}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {">>"}
+          </button>
+        </div>
+      </div>
+
+      {/* ✅ POPUP BACKDROP */}
+      <div
+        className={[
+          "fixed inset-0 z-[70] bg-black/60 transition-opacity duration-300",
+          expanded ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
+        ].join(" ")}
+        onClick={() => setExpanded(false)}
+      />
+
+      {/* ✅ POPUP SHEET */}
+      <div
+        className={[
+          "fixed left-0 right-0 bottom-0 z-[80] bg-black text-white rounded-t-3xl",
+          "transition-transform duration-300 ease-out",
+          expanded ? "translate-y-0" : "translate-y-full",
+        ].join(" ")}
+        style={{ height: "75vh" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* grab */}
+        <div className="w-full flex justify-center pt-3">
+          <div className="w-12 h-1.5 rounded-full bg-white/30" />
+        </div>
+
+        {/* header */}
+        <div className="flex items-center justify-between px-5 pt-4">
+          <div className="text-sm font-bold">
+            {currentSong ? `${currentSong.artist} — ${currentSong.title}` : "Nothing playing"}
+          </div>
+
+          <button
+            type="button"
+            className="text-white/80 text-xl"
+            onClick={() => setExpanded(false)}
+            aria-label="Close player"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* ✅ Like + Repeat (icons only) */}
+        <div className="px-5 mt-6 flex items-center justify-between">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleLike();
+            }}
+            className={[
+              "w-10 h-10 rounded-full grid place-items-center",
+              "bg-white/10 hover:bg-white/15 active:scale-95 transition",
+            ].join(" ")}
+            aria-label="Like"
+            title="Like"
+          >
+            <span className={liked ? "text-red-500 text-lg" : "text-lg"}>
+              {liked ? "♥" : "♡"}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setRepeatOne?.((v) => !v);
+            }}
+            className={[
+              "w-10 h-10 rounded-full grid place-items-center",
+              repeatOne ? "bg-[#CFFFFF] text-black" : "bg-white/10 hover:bg-white/15",
+              "active:scale-95 transition",
+            ].join(" ")}
+            aria-label="Repeat"
+            title={repeatOne ? "Repeat 1" : "Repeat"}
+          >
+            <span className="text-lg">🔁</span>
+          </button>
+        </div>
+
+        {/* wave + time */}
+        <div className="mt-6 px-5">
+          <div className="relative w-full h-5 rounded-full overflow-hidden bg-white/10">
+            <div
+              className="absolute inset-0 opacity-35"
+              style={{
+                backgroundImage:
+                  "repeating-linear-gradient(90deg, rgba(255,255,255,0.55) 0 2px, transparent 2px 7px)",
+              }}
             />
+            <div
+              className="absolute inset-y-0 left-0 bg-[#CFFFFF]"
+              style={{
+                width: duration ? `${Math.min(100, (currentTime / duration) * 100)}%` : "0%",
+              }}
+            />
+            <input
+              type="range"
+              min={0}
+              max={duration || 0}
+              step="0.1"
+              value={Math.min(currentTime, duration || 0)}
+              onChange={(e) => handleSeek(e.target.value)}
+              disabled={!hasSong || !hasAudio || !duration}
+              className="absolute inset-0 w-full opacity-0 cursor-pointer"
+              aria-label="Seek"
+            />
+          </div>
 
-            <div className="absolute right-0 bottom-full mb-2 z-50 bg-[#CFFFFF] rounded-xl p-4 shadow-xl w-28">
-              <button
-                type="button"
-                className="w-full flex flex-col items-center gap-2 py-3 rounded-lg transition hover:bg-black/10 active:scale-95"
-                onClick={handleDownload}
-              >
-                <span className="text-xl">⬇️</span>
-                <span className="text-[10px] font-bold">Download</span>
-              </button>
+          <div className="flex items-center justify-between text-xs font-bold mt-2 text-white/80">
+            <span>{formatTime(currentTime)}</span>
+            <span>{formatTime(duration)}</span>
+          </div>
+        </div>
 
-              <button
-                type="button"
-                className="w-full flex flex-col items-center gap-2 py-3 rounded-lg transition hover:bg-black/10 active:scale-95"
-                onClick={handleShare}
-              >
-                <span className="text-xl">🔗</span>
-                <span className="text-[10px] font-bold">Share</span>
-              </button>
-            </div>
-          </>
-        )}
+        {/* big controls */}
+        <div className="mt-10 flex items-center justify-center gap-14">
+          <button disabled={prevDisabled} className={prevDisabled ? "opacity-40" : ""}>
+            {"<<"}
+          </button>
+
+          <button
+            type="button"
+            onClick={handlePlayClick}
+            disabled={!hasSong || !hasAudio}
+            className={[
+              "w-16 h-16 rounded-full flex items-center justify-center font-black text-2xl",
+              hasSong && hasAudio ? "bg-[#CFFFFF] text-black" : "bg-white/10 text-white/40",
+              "active:scale-95 transition",
+            ].join(" ")}
+          >
+            {isPlaying ? "||" : "▶"}
+          </button>
+
+          <button disabled={nextDisabled} className={nextDisabled ? "opacity-40" : ""}>
+            {">>"}
+          </button>
+        </div>
       </div>
 
-      {/* optional: show current track */}
-      <div className="text-center text-[10px] font-bold mb-2">
-        {currentTrack?.artist} — {currentTrack?.title}
-      </div>
-
-      <div className="flex items-center justify-center gap-10">
-        <button type="button" className={`text-sm font-black ${btn}`} onClick={prevTrack}>
-          {"<<"}
-        </button>
-
-        <button type="button" className={`text-base font-black ${btn}`} onClick={togglePlay}>
-          {isPlaying ? "||" : "▶"}
-        </button>
-
-        <button type="button" className={`text-sm font-black ${btn}`} onClick={nextTrack}>
-          {">>"}
-        </button>
-      </div>
-    </div>
+      {/* ✅ Playlist popup (opened from 3-dots) */}
+      <PlaylistSheet
+        isOpen={playlistOpen}
+        onClose={() => setPlaylistOpen(false)}
+        song={currentSong}
+      />
+    </>
   );
 }

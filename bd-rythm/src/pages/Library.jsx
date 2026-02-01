@@ -1,10 +1,9 @@
 import React, { useMemo, useRef, useState, useEffect } from "react";
-import { FiSearch } from "react-icons/fi";
-import { BiSolidMicrophone } from "react-icons/bi";
 import logo from "../assets/BD-RYTHM-logo.png";
 import { useNavigate } from "react-router-dom";
-import PlayerBar from "../components/PlayerBar";
 import SearchBar from "../components/SearchBar";
+import { usePlayer } from "../context/usePlayer";
+
 
 const expandSongs = (base, count = 25) =>
   Array.from({ length: count }).map((_, i) => {
@@ -299,7 +298,7 @@ const SECTION2_PILLS = [
   { id: "party-starters", title: "Party Starters", path: "/listening-party" },
 ];
 
-// ✅ NEW: SECTION 3 CONFIG (mood chips) — different design from section 2
+// ✅ NEW: SECTION 3 CONFIG (mood chips)
 const SECTION3_MOODS = [
   { id: "love", title: "Love / Feel Good", path: "/mood-love" },
   { id: "heartbreak", title: "Heartbreak", path: "/mood-heartbreak" },
@@ -307,8 +306,17 @@ const SECTION3_MOODS = [
   { id: "relax", title: "Relax / Focus", path: "/mood-relax" },
 ];
 
+// ✅ FIX: SECTION 1 CONFIG moved OUTSIDE the component (declared ONCE)
+const SECTION1_TILES = [
+  { id: "top-songs", title: "TOP SONGS", path: "/top-songs" },
+  { id: "popular-artists", title: "POPULAR ARTISTS AROUND THE WORLD", path: "/popular-artists" },
+  { id: "popular-playlists", title: "POPULAR PLAYLISTS", path: "/popular-playlists" },
+  { id: "new-releases", title: "NEW RELEASES", path: "/new-releases" },
+];
+
 export default function Library() {
   const navigate = useNavigate();
+  const { setSong } = usePlayer();
 
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
@@ -318,13 +326,6 @@ export default function Library() {
   const rafRef = useRef(null);
 
   const activeGenre = GENRES[activeIndex];
-
-  const SECTION1_TILES = [
-    { id: "top-songs", title: "TOP SONGS", path: "/top-songs" },
-    { id: "popular-artists", title: "POPULAR ARTISTS AROUND THE WORLD", path: "/popular-artists" },
-    { id: "popular-playlists", title: "POPULAR PLAYLISTS", path: "/popular-playlists" },
-    { id: "new-releases", title: "NEW RELEASES", path: "/new-releases" },
-  ];
 
   const filteredSongs = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -378,11 +379,10 @@ export default function Library() {
     });
   }, [activeGenre]);
 
-  // ✅ NEW: Section 3 previews (genre-aware)
+  // ✅ Section 3 previews (genre-aware)
   const section3MoodsWithPreview = useMemo(() => {
     const songs = activeGenre?.songs ?? [];
 
-    // simple slicing rules for now (later you can tag songs by mood)
     const love = songs.slice(0, 4).map((s) => s.title);
     const heartbreak = songs.slice(4, 8).map((s) => s.title);
     const gym = songs.slice(8, 12).map((s) => s.title);
@@ -511,7 +511,7 @@ export default function Library() {
           {activeGenre?.name}
         </h2>
 
-        {/* ✅ SONGS: horizontal scrolling columns (your layout) */}
+        {/* ✅ SONGS: horizontal scrolling columns */}
         <div className="mt-6 max-w-md mx-auto px-4">
           <div className="overflow-x-auto scrollbar-hide pb-4">
             <div
@@ -525,13 +525,14 @@ export default function Library() {
                 <button
                   key={song.id}
                   type="button"
-                  onClick={() => navigate("/home", { state: { track: song } })}
+                  onClick={() => {
+                    setSong(song);
+                    navigate("/home", { state: { track: song } });
+                  }}
                   className="flex items-start gap-4 text-left w-full"
                 >
-                  {/* small cover */}
                   <div className="w-12 h-12 bg-[#CFFFFF] rounded-md shrink-0" />
 
-                  {/* text */}
                   <div className="leading-tight">
                     <p className="text-[#00FFFF] text-sm font-bold">
                       {song.artist}
@@ -601,45 +602,49 @@ export default function Library() {
           </div>
         </div>
 
-      {/* ✅ SECTION 2 — EVERYONE IS LISTENING TO (NEW DESIGN: compact chips) */}
-<div className="mt-10 max-w-md mx-auto px-4">
-  <h2 className="text-[#00FFFF] text-sm font-extrabold mb-4">
-    EVERYONE IS LISTENING TO
-  </h2>
+        {/* ✅ SECTION 2 — EVERYONE IS LISTENING TO */}
+        <div className="mt-10 max-w-md mx-auto px-4">
+          <h2 className="text-[#00FFFF] text-sm font-extrabold mb-4">
+            EVERYONE IS LISTENING TO
+          </h2>
 
-  <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
-    {section2PillsWithPreview.map((pill) => (
-      <button
-        key={pill.id}
-        type="button"
-        onClick={() => navigate(pill.path, { state: { genre: activeGenre } })}
-        className="
-          shrink-0
-          min-w-[170px]
-          rounded-xl
-          px-4 py-3
-          bg-[#CFFFFF]
-          text-black
-          text-left
-          transition
-          hover:scale-[1.02]
-          active:scale-95
-        "
-      >
-        <div className="flex items-center justify-between gap-3">
-          <p className="font-black text-[11px] leading-tight">{pill.title}</p>
-          <span className="text-[10px] font-black opacity-70">›</span>
+          <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
+            {section2PillsWithPreview.map((pill) => (
+              <button
+                key={pill.id}
+                type="button"
+                onClick={() =>
+                  navigate(pill.path, { state: { genre: activeGenre } })
+                }
+                className="
+                  shrink-0
+                  min-w-[170px]
+                  rounded-xl
+                  px-4 py-3
+                  bg-[#CFFFFF]
+                  text-black
+                  text-left
+                  transition
+                  hover:scale-[1.02]
+                  active:scale-95
+                "
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <p className="font-black text-[11px] leading-tight">
+                    {pill.title}
+                  </p>
+                  <span className="text-[10px] font-black opacity-70">›</span>
+                </div>
+
+                <p className="text-[10px] font-semibold opacity-70 mt-2 truncate">
+                  {(pill.preview ?? []).join(" • ")}
+                </p>
+              </button>
+            ))}
+          </div>
         </div>
 
-        <p className="text-[10px] font-semibold opacity-70 mt-2 truncate">
-          {(pill.preview ?? []).join(" • ")}
-        </p>
-      </button>
-    ))}
-  </div>
-</div>
-
-        {/* ✅ SECTION 3 — FIND YOUR MOOD (different style) */}
+        {/* ✅ SECTION 3 — FIND YOUR MOOD */}
         <div className="mt-10 max-w-md mx-auto px-4">
           <h2 className="text-[#00FFFF] text-sm font-extrabold mb-4">
             FIND YOUR MOOD
@@ -676,7 +681,10 @@ export default function Library() {
 
                 <div className="mt-3 space-y-1">
                   {(mood.preview ?? []).slice(0, 3).map((t, i) => (
-                    <p key={i} className="text-[#00FFFF] text-[10px] font-semibold truncate">
+                    <p
+                      key={i}
+                      className="text-[#00FFFF] text-[10px] font-semibold truncate"
+                    >
                       • {t}
                     </p>
                   ))}
@@ -687,7 +695,8 @@ export default function Library() {
         </div>
       </div>
 
-      <PlayerBar />
+   
+
     </div>
   );
 }

@@ -11,9 +11,10 @@ const BottomNav = () => {
   const [, setActive] = useState("home");
 
   return (
-    <div className="w-full bg-[#00EFFF] px-4 h-20 flex items-center">
+    <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#00EFFF] px-4 h-20 flex items-center">
       <div className="w-full flex justify-around items-center text-center text-black">
         <button
+          type="button"
           onClick={() => {
             setActive("home");
             navigate("/home");
@@ -24,6 +25,7 @@ const BottomNav = () => {
         </button>
 
         <button
+          type="button"
           onClick={() => {
             setActive("library");
             navigate("/library");
@@ -34,9 +36,10 @@ const BottomNav = () => {
         </button>
 
         <button
+          type="button"
           onClick={() => {
             setActive("record");
-            navigate("/recorder"); // ✅ Audio Recorder page
+            navigate("/recorder");
           }}
         >
           <img src={recorderIcon} className="h-6" alt="Recorder" />
@@ -44,9 +47,10 @@ const BottomNav = () => {
         </button>
 
         <button
+          type="button"
           onClick={() => {
             setActive("search");
-            navigate("/search"); // ✅ Search page
+            navigate("/search");
           }}
         >
           <img src={searchIcon} className="h-6" alt="Search" />
