@@ -1,9 +1,13 @@
-import React, { useMemo, useRef, useState, useEffect } from "react";
+import React, { useMemo, useRef, useState, useEffect, useCallback } from "react";
 import logo from "../assets/BD-RYTHM-logo.png";
 import { useNavigate } from "react-router-dom";
 import SearchBar from "../components/SearchBar";
 import { usePlayer } from "../context/usePlayer";
-
+import {
+  getTrendingTracks,
+  getTrackStreamUrl,
+  getTrendingPlaylists,
+} from "../api/audius";
 
 const expandSongs = (base, count = 25) =>
   Array.from({ length: count }).map((_, i) => {
@@ -298,7 +302,7 @@ const SECTION2_PILLS = [
   { id: "party-starters", title: "Party Starters", path: "/listening-party" },
 ];
 
-// ✅ NEW: SECTION 3 CONFIG (mood chips)
+// ✅ SECTION 3 CONFIG (mood chips)
 const SECTION3_MOODS = [
   { id: "love", title: "Love / Feel Good", path: "/mood-love" },
   { id: "heartbreak", title: "Heartbreak", path: "/mood-heartbreak" },
@@ -306,7 +310,7 @@ const SECTION3_MOODS = [
   { id: "relax", title: "Relax / Focus", path: "/mood-relax" },
 ];
 
-// ✅ FIX: SECTION 1 CONFIG moved OUTSIDE the component (declared ONCE)
+// ✅ SECTION 1 CONFIG
 const SECTION1_TILES = [
   { id: "top-songs", title: "TOP SONGS", path: "/top-songs" },
   { id: "popular-artists", title: "POPULAR ARTISTS AROUND THE WORLD", path: "/popular-artists" },
@@ -316,10 +320,16 @@ const SECTION1_TILES = [
 
 export default function Library() {
   const navigate = useNavigate();
-  const { setSong } = usePlayer();
+  usePlayer();
 
-  const [query, setQuery] = useState("");
+  const [Query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
+
+  // ✅ REAL Audius data state
+  const [realTracks, setRealTracks] = useState([]);
+  const [realPlaylists, setRealPlaylists] = useState([]);
+  const [loadingReal, setLoadingReal] = useState(false);
+  const [realErr, setRealErr] = useState("");
 
   const scrollerRef = useRef(null);
   const itemRefs = useRef([]);
@@ -327,24 +337,73 @@ export default function Library() {
 
   const activeGenre = GENRES[activeIndex];
 
-  const filteredSongs = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    const list = activeGenre?.songs ?? [];
-    if (!q) return list;
-    return list.filter(
-      (s) =>
-        s.artist.toLowerCase().includes(q) ||
-        s.title.toLowerCase().includes(q)
-    );
-  }, [query, activeGenre]);
+  // ✅ REAL track mapper (safe)
+  const mapTrack = useCallback(
+    (t) => ({
+      id: String(t?.id),
+      title: t?.title || "Untitled",
+      artist: t?.user?.name || t?.user?.handle || "Unknown",
+      userId: String(t?.user?.id || t?.user_id || ""), // ✅ REAL user id
+      artistArtwork:
+        t?.user?.profile_picture?.["150x150"] ||
+        t?.user?.profile_picture?.["480x480"] ||
+        "",
+      artwork:
+        t?.artwork?.["150x150"] ||
+        t?.artwork?.["480x480"] ||
+        t?.artwork?.["1000x1000"] ||
+        "",
+      genre: t?.genre || "All",
+      createdAt: t?.created_at || t?.release_date || 0,
+      audio: getTrackStreamUrl(t?.id),
+    }),
+    []
+  );
 
-  // ✅ Section 1 previews (genre-aware)
+  // ✅ Fetch REAL Audius tracks + playlists when genre changes
+  useEffect(() => {
+    const genreName = activeGenre?.name || "All";
+    let alive = true;
+
+    (async () => {
+      try {
+        setLoadingReal(true);
+        setRealErr("");
+
+        const trackParams =
+          genreName === "All"
+            ? { limit: 60, time: "week" }
+            : { limit: 60, time: "week", genre: genreName };
+
+        const tdata = await getTrendingTracks(trackParams);
+        const mappedTracks = (tdata || []).map(mapTrack);
+
+        const pdata = await getTrendingPlaylists({ limit: 30, time: "week" });
+
+        if (!alive) return;
+        setRealTracks(mappedTracks);
+        setRealPlaylists(pdata || []);
+      } catch (e) {
+        if (!alive) return;
+        setRealErr(e?.message || "Failed to load real Audius data.");
+        setRealTracks([]);
+        setRealPlaylists([]);
+      } finally {
+        if (alive) setLoadingReal(false);
+      }
+    })();
+
+    return () => {
+      alive = false;
+    };
+  }, [activeGenre?.name, mapTrack]);
+
+  // ✅ Section 1 previews (genre-aware) - keep your look
   const section1TilesWithPreview = useMemo(() => {
     const songs = activeGenre?.songs ?? [];
 
     const topSongs = songs.slice(0, 3).map((s) => `${s.artist} — ${s.title}`);
     const artists = [...new Set(songs.map((s) => s.artist))].slice(0, 3);
-
     const playlists = songs.slice(0, 3).map((s) => `${s.title}`);
     const newReleases = songs.slice(-3).reverse().map((s) => `${s.artist} — ${s.title}`);
 
@@ -357,7 +416,7 @@ export default function Library() {
     });
   }, [activeGenre]);
 
-  // ✅ Section 2 previews (genre-aware)
+  // ✅ Section 2 previews (unchanged)
   const section2PillsWithPreview = useMemo(() => {
     const songs = activeGenre?.songs ?? [];
     const artists = [...new Set(songs.map((s) => s.artist))];
@@ -379,7 +438,7 @@ export default function Library() {
     });
   }, [activeGenre]);
 
-  // ✅ Section 3 previews (genre-aware)
+  // ✅ Section 3 previews (unchanged)
   const section3MoodsWithPreview = useMemo(() => {
     const songs = activeGenre?.songs ?? [];
 
@@ -445,8 +504,7 @@ export default function Library() {
     const currentScrollLeft = scroller.scrollLeft;
 
     const scrollerCenter = scrollerRect.width / 2;
-    const elCenterFromLeft =
-      elRect.left - scrollerRect.left + elRect.width / 2;
+    const elCenterFromLeft = elRect.left - scrollerRect.left + elRect.width / 2;
 
     const target = currentScrollLeft + (elCenterFromLeft - scrollerCenter);
     scroller.scrollTo({ left: target, behavior: "smooth" });
@@ -454,7 +512,6 @@ export default function Library() {
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
-      {/* content wrapper so PlayerBar can sit at bottom */}
       <div className="flex-1 px-6 pt-6 pb-28">
         <div className="flex justify-end">
           <img src={logo} alt="BD Rhythm Logo" className="w-16 md:w-20" />
@@ -507,67 +564,168 @@ export default function Library() {
           </div>
         </div>
 
-        <h2 className="mt-6 text-center text-[#00FFFF] text-sm font-extrabold">
-          {activeGenre?.name}
-        </h2>
-
-        {/* ✅ SONGS: horizontal scrolling columns */}
-        <div className="mt-6 max-w-md mx-auto px-4">
-          <div className="overflow-x-auto scrollbar-hide pb-4">
-            <div
-              className="
-                grid grid-rows-4 grid-flow-col
-                auto-cols-[220px]
-                gap-x-12 gap-y-8
-              "
-            >
-              {filteredSongs.map((song) => (
-                <button
-                  key={song.id}
-                  type="button"
-                  onClick={() => {
-                    setSong(song);
-                    navigate("/home", { state: { track: song } });
-                  }}
-                  className="flex items-start gap-4 text-left w-full"
-                >
-                  <div className="w-12 h-12 bg-[#CFFFFF] rounded-md shrink-0" />
-
-                  <div className="leading-tight">
-                    <p className="text-[#00FFFF] text-sm font-bold">
-                      {song.artist}
-                    </p>
-                    <p className="text-[#00FFFF] text-sm font-semibold">
-                      {song.title}
-                    </p>
-
-                    {"genre" in song && (
-                      <p className="text-white/60 text-[10px] mt-1">
-                        {song.genre}
-                      </p>
-                    )}
-                  </div>
-                </button>
-              ))}
+        {/* ✅ TRENDING THIS WEEK */}
+        <div className="mt-8 max-w-md mx-auto px-4">
+          <button
+            type="button"
+            onClick={() => navigate("/home")}
+            className="
+              w-full
+              rounded-2xl
+              border border-white/10
+              bg-gradient-to-br from-[#0b0b0b] to-black
+              p-4
+              text-left
+              transition
+              hover:scale-[1.02]
+              active:scale-95
+              hover:shadow-[0_0_0_1px_rgba(0,255,255,0.15)]
+              active:scale-[0.99]
+            "
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-[#CFFFFF] font-black text-[12px] tracking-wide">
+                  TRENDING THIS WEEK
+                </p>
+                <p className="text-white/50 text-[10px] font-semibold mt-1">
+                  Tap to explore what’s hot right now
+                </p>
+              </div>
             </div>
+          </button>
 
-            {filteredSongs.length === 0 && (
-              <p className="text-center text-white/60 text-sm mt-6">
-                No results for “{query}”
-              </p>
-            )}
-          </div>
+          {loadingReal ? (
+            <p className="text-white/40 text-[10px] mt-2 px-1">
+              Loading real Audius data…
+            </p>
+          ) : realErr ? (
+            <p className="text-red-400 text-[10px] mt-2 px-1">{realErr}</p>
+          ) : null}
         </div>
 
-        {/* ✅ SECTION 1 — AFTER songs list (tiles) */}
+        {/* ✅ SECTION 1 — tiles */}
         <div className="mt-10 max-w-md mx-auto px-4">
           <div className="flex gap-5 overflow-x-auto scrollbar-hide pb-2">
             {section1TilesWithPreview.map((tile) => (
               <button
                 key={tile.id}
-                onClick={() =>
-                  navigate(tile.path, { state: { genre: activeGenre } })
-                }
+                onClick={() => {
+                  const genreName = activeGenre?.name || "All";
+
+                  // if realTracks not loaded yet, still navigate (TopSongs can fetch)
+                  if (tile.id === "top-songs") {
+                    return navigate("/top-songs", {
+                      state: {
+                        scope: "genre",
+                        chart: `Top Songs: ${genreName}`,
+                        genre: genreName,
+                        tracks: Array.isArray(realTracks) ? realTracks : [],
+                      },
+                    });
+                  }
+
+                  if (tile.id === "popular-artists") {
+                    const seen = new Set();
+                    const artists = [];
+
+                    // ✅ if no realTracks yet, fallback to local songs so page isn’t empty
+                    if (!realTracks || realTracks.length === 0) {
+                      const songs = activeGenre?.songs ?? [];
+                      for (const s of songs) {
+                        const key = String(s.artist || "").toLowerCase();
+                        if (!key || seen.has(key)) continue;
+                        seen.add(key);
+
+                        artists.push({
+                          id: `local-${key}`,
+                          name: s.artist,
+                          artwork: "",
+                          genre: genreName,
+                        });
+
+                        if (artists.length >= 18) break;
+                      }
+                    } else {
+                      for (const t of realTracks) {
+                        const uid = t.userId;
+                        if (!uid || seen.has(uid)) continue;
+                        seen.add(uid);
+
+                        artists.push({
+                          id: uid,
+                          userId: uid,
+                          name: t.artist,
+                          artwork: t.artistArtwork || t.artwork || "",
+                          genre: genreName,
+                        });
+
+                        if (artists.length >= 18) break;
+                      }
+                    }
+
+                    return navigate("/popular-artists", {
+                      state: { genre: genreName, artists },
+                    });
+                  }
+
+                  if (tile.id === "popular-playlists") {
+  const genreName = activeGenre?.name || "All";
+
+  // ✅ If Audius playlists are available
+  if (Array.isArray(realPlaylists) && realPlaylists.length > 0) {
+    const playlists = realPlaylists.slice(0, 24).map((p) => ({
+      id: String(p?.id),
+      title: p?.playlist_name || p?.title || "Playlist",
+      artist: p?.user?.name || p?.user?.handle || "Unknown",
+      artwork:
+        p?.artwork?.["150x150"] ||
+        p?.artwork?.["480x480"] ||
+        p?.artwork?.["1000x1000"] ||
+        "",
+    }));
+
+    return navigate("/popular-playlists", {
+      state: { genre: genreName, playlists },
+    });
+  }
+
+  // ✅ Fallback: build “playlists” from realTracks (so page never empty)
+  const fallback = (realTracks || []).slice(0, 24).map((t, i) => ({
+    id: `mix-${genreName}-${t?.id || i}`,
+    title: t?.title ? `${t.title} Mix` : `Playlist ${i + 1}`,
+    artist: t?.artist || "BD Rythm",
+    artwork: t?.artwork || t?.artistArtwork || "",
+  }));
+
+  return navigate("/popular-playlists", {
+    state: { genre: genreName, playlists: fallback },
+  });
+}
+
+                  if (tile.id === "new-releases") {
+                    const newest =
+                      realTracks && realTracks.length
+                        ? [...realTracks]
+                            .sort((a, b) => Number(b.createdAt) - Number(a.createdAt))
+                            .slice(0, 40)
+                        : (activeGenre?.songs ?? []).slice(0, 30).map((s, i) => ({
+                            id: `local-${s.artist}-${s.title}-${i}`,
+                            artist: s.artist,
+                            title: s.title,
+                            artwork: "",
+                            genre: genreName,
+                            audio: "",
+                            createdAt: 0,
+                          }));
+
+                    return navigate("/new-releases", {
+                      state: { genre: genreName, tracks: newest },
+                    });
+                  }
+
+                  return navigate(tile.path, { state: { genre: genreName } });
+                }}
                 className="
                   min-w-[240px] h-40
                   bg-[#CFFFFF]
@@ -582,9 +740,7 @@ export default function Library() {
                 "
               >
                 <div className="text-left">
-                  <p className="font-black text-[13px] leading-tight">
-                    {tile.title}
-                  </p>
+                  <p className="font-black text-[13px] leading-tight">{tile.title}</p>
                   <p className="text-[10px] font-bold opacity-70 mt-1">
                     {activeGenre?.name}
                   </p>
@@ -613,9 +769,7 @@ export default function Library() {
               <button
                 key={pill.id}
                 type="button"
-                onClick={() =>
-                  navigate(pill.path, { state: { genre: activeGenre } })
-                }
+                onClick={() => navigate(pill.path, { state: { genre: activeGenre } })}
                 className="
                   shrink-0
                   min-w-[170px]
@@ -630,9 +784,7 @@ export default function Library() {
                 "
               >
                 <div className="flex items-center justify-between gap-3">
-                  <p className="font-black text-[11px] leading-tight">
-                    {pill.title}
-                  </p>
+                  <p className="font-black text-[11px] leading-tight">{pill.title}</p>
                   <span className="text-[10px] font-black opacity-70">›</span>
                 </div>
 
@@ -655,9 +807,7 @@ export default function Library() {
               <button
                 key={mood.id}
                 type="button"
-                onClick={() =>
-                  navigate(mood.path, { state: { genre: activeGenre } })
-                }
+                onClick={() => navigate(mood.path, { state: { genre: activeGenre } })}
                 className="
                   shrink-0
                   min-w-[210px]
@@ -671,9 +821,7 @@ export default function Library() {
                   active:scale-95
                 "
               >
-                <p className="text-[#CFFFFF] font-black text-[12px]">
-                  {mood.title}
-                </p>
+                <p className="text-[#CFFFFF] font-black text-[12px]">{mood.title}</p>
 
                 <p className="text-white/50 text-[10px] font-semibold mt-1 truncate">
                   {activeGenre?.name}
@@ -694,9 +842,6 @@ export default function Library() {
           </div>
         </div>
       </div>
-
-   
-
     </div>
   );
 }

@@ -117,7 +117,7 @@ export default function PlayerBar() {
     <>
       {/* ✅ MINI PLAYER (CLEAN) */}
       <div
-        className="fixed left-0 right-0 bottom-20 z-50 w-full bg-[#CFFFFF] px-6 py-4 text-black cursor-pointer"
+         className="fixed left-0 right-0 bottom-20 z-[60] w-full bg-[#CFFFFF]/95 backdrop-blur border-t border-black/10 px-6 py-4 text-black cursor-pointer"
         onClick={() => {
           setMenuOpen(false);
           setExpanded(true);

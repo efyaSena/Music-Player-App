@@ -1,6 +1,40 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PlayerContext } from "./PlayerContext";
 
+// ✅ Audius retry helpers (silent)
+const DISCOVERY_NODES = [
+  "https://discoveryprovider.audius.co",
+  "https://discoveryprovider2.audius.co",
+];
+
+function pickNode(exclude) {
+  const choices = DISCOVERY_NODES.filter((n) => n !== exclude);
+  return choices[Math.floor(Math.random() * choices.length)] || DISCOVERY_NODES[0];
+}
+
+function isAudiusStreamUrl(url = "") {
+  return typeof url === "string" && url.includes("/v1/tracks/") && url.includes("/stream");
+}
+
+function getAudiusTrackId(url = "") {
+  // matches: /v1/tracks/{id}/stream
+  const m = String(url).match(/\/v1\/tracks\/([^/]+)\/stream/);
+  return m?.[1] || null;
+}
+
+function getAudiusBase(url = "") {
+  try {
+    return new URL(url).origin;
+  } catch {
+    return "";
+  }
+}
+
+function buildAudiusStreamUrl(trackId, base) {
+  const b = base || DISCOVERY_NODES[0];
+  return `${b}/v1/tracks/${trackId}/stream?app_name=bd-rythm`;
+}
+
 export function PlayerProvider({ children }) {
   const audioRef = useRef(new Audio());
 
@@ -33,31 +67,56 @@ export function PlayerProvider({ children }) {
     }
   }, []);
 
-  const playSong = useCallback(async (song) => {
-    if (!song) return;
+ const playSong = useCallback(async (song) => {
+  if (!song) return;
 
-    setCurrentSong(song);
+  setCurrentSong(song);
 
-    // ✅ if no audio yet, don’t crash
-    if (!song.audio) {
-      setIsPlaying(false);
-      setCurrentTime(0);
-      setDuration(0);
-      return;
+  // ✅ if no audio yet, don’t crash
+  if (!song.audio) {
+    setIsPlaying(false);
+    setCurrentTime(0);
+    setDuration(0);
+    return;
+  }
+
+  // ✅ Silent retry for Audius only
+  const originalUrl = song.audio;
+  const audius = isAudiusStreamUrl(originalUrl);
+  const trackId = audius ? getAudiusTrackId(originalUrl) : null;
+
+  // default attempts:
+  const maxAttempts = audius && trackId ? 3 : 1;
+
+  let attemptUrl = originalUrl;
+  let lastBase = audius ? getAudiusBase(originalUrl) : "";
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    // swap node on retry
+    if (attempt > 1 && audius && trackId) {
+      const nextBase = pickNode(lastBase);
+      lastBase = nextBase;
+      attemptUrl = buildAudiusStreamUrl(trackId, nextBase);
     }
 
-    if (audioRef.current.src !== song.audio) {
-      audioRef.current.src = song.audio;
+    if (audioRef.current.src !== attemptUrl) {
+      audioRef.current.src = attemptUrl;
     }
 
     try {
       await audioRef.current.play();
       setIsPlaying(true);
+      return; // ✅ success, stop retrying
     } catch (e) {
-      console.log("Play blocked:", e);
-      setIsPlaying(false);
+      // ✅ silent fail; only mark stopped on last attempt
+      if (attempt === maxAttempts) {
+        console.log("Play blocked:", e);
+        setIsPlaying(false);
+      }
     }
-  }, []);
+  }
+}, []);
+
 
   const togglePlay = useCallback(async () => {
     // currentSong is state, so it’s safe to reference here

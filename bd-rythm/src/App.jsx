@@ -20,9 +20,13 @@ import PopularArtists from "./pages/PopularArtists";
 import PopularPlaylists from "./pages/PopularPlaylists";
 import NewReleases from "./pages/NewReleases";
 
+import Playlist from "./pages/Playlist";
+
+import ArtistProfile from "./pages/ArtistProfile";
+
 function PlayerLayout() {
   return (
-    <div className="min-h-screen bg-black text-white pb-[160px]">
+    <div className="min-h-dvh bg-black text-white overflow-x-hidden pb-[160px]">
       {/* page content */}
       <Outlet />
 
@@ -34,6 +38,7 @@ function PlayerLayout() {
     </div>
   );
 }
+
 
 export default function App() {
   return (
@@ -56,6 +61,9 @@ export default function App() {
         <Route path="/popular-artists" element={<PopularArtists />} />
         <Route path="/popular-playlists" element={<PopularPlaylists />} />
         <Route path="/new-releases" element={<NewReleases />} />
+        <Route path="/playlist" element={<Playlist />} />
+      <Route path="/artist" element={<ArtistProfile />} />
+
       </Route>
     </Routes>
   );

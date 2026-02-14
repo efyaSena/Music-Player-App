@@ -1,46 +1,27 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import BottomNav from "../components/BottomNav";
-
 
 export default function TopAlbums() {
   const navigate = useNavigate();
-  const location = useLocation();
+  const { state } = useLocation();
 
-  const GENRES = useMemo(
-    () => ["All", "Afrobeat", "Amapiano", "Hip-hop", "Pop", "Rock", "R&B", "Reggae", "K-Pop"],
-    []
-  );
+  const rawGenre = state?.genre ?? "All";
+  const genreName = typeof rawGenre === "string" ? rawGenre : rawGenre?.name || "All";
 
-  const [activeGenre, setActiveGenre] = useState(location.state?.focus || "All");
+  const albumsFromState = Array.isArray(state?.albums) ? state.albums : [];
 
-  const albums = useMemo(
-    () => [
-      { id: "a1", name: "SOS", artist: "SZA", genre: "R&B" },
-      { id: "a2", name: "UTOPIA", artist: "Travis Scott", genre: "Hip-hop" },
-      { id: "a3", name: "Unavailable (EP)", artist: "Davido", genre: "Afrobeat" },
-      { id: "a4", name: "Renaissance", artist: "Beyoncé", genre: "Pop" },
-      { id: "a5", name: "After Hours", artist: "The Weeknd", genre: "Pop" },
-      { id: "a6", name: "Born Pink", artist: "BLACKPINK", genre: "K-Pop" },
-      { id: "a7", name: "Legend", artist: "Bob Marley", genre: "Reggae" },
-      { id: "a8", name: "Dark Side", artist: "Pink Floyd", genre: "Rock" },
-      { id: "a9", name: "Amapiano Hits", artist: "Various", genre: "Amapiano" },
-      { id: "a10", name: "Damn.", artist: "Kendrick Lamar", genre: "Hip-hop" },
-      { id: "a11", name: "Starboy", artist: "The Weeknd", genre: "Pop" },
-      { id: "a12", name: "Made in Lagos", artist: "Wizkid", genre: "Afrobeat" },
-    ],
-    []
-  );
-
-  const filtered = useMemo(() => {
-    if (activeGenre === "All") return albums;
-    return albums.filter((a) => a.genre === activeGenre);
-  }, [albums, activeGenre]);
+  // filter by genre (only if you want)
+  const visibleAlbums = useMemo(() => {
+    if (genreName === "All") return albumsFromState;
+    return albumsFromState.filter(
+      (a) => a?.genre === genreName || a?.genre === "All"
+    );
+  }, [albumsFromState, genreName]);
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col">
-      <div className="flex-1 px-6 pt-6 pb-6 max-w-md mx-auto w-full">
-       <button
+    <div className="min-h-screen bg-black text-white px-6 pt-6 pb-28">
+      {/* back */}
+     <button
           type="button"
           onClick={() => navigate(-1)}
           className="text-[#00FFFF] text-2xl font-black transition duration-200 hover:scale-110 active:scale-95"
@@ -49,64 +30,70 @@ export default function TopAlbums() {
           «
         </button>
 
-        {/* chips like your design */}
-        <div className="mt-6 flex gap-4 overflow-x-auto scrollbar-hide pb-2">
-          {GENRES.map((g) => {
-            const isActive = g === activeGenre;
-            return (
+      <div className="max-w-md mx-auto">
+        <h1 className="mt-6 text-[#00FFFF] text-2xl font-extrabold uppercase">
+          TOP ALBUMS
+        </h1>
+
+        <p className="mt-2 text-white/70 text-sm">
+          Genre: <span className="text-[#00FFFF] font-bold">{genreName}</span>
+        </p>
+
+        {visibleAlbums.length === 0 ? (
+          <div className="mt-10 text-white/60">
+            No albums loaded. Open this page from{" "}
+            <span className="text-[#00FFFF] font-bold">Home → Top Albums</span>.
+          </div>
+        ) : (
+          <div className="mt-6 grid grid-cols-2 gap-4">
+            {visibleAlbums.map((album) => (
               <button
-                key={g}
+                key={album.id}
                 type="button"
-                onClick={() => setActiveGenre(g)}
-                className={[
-                  // ⬇️ CHANGED: removed fixed w-24 so text can fit; added px-4 and text styles
-                  "shrink-0 h-6 px-4 rounded-full transition duration-200 hover:scale-105 active:scale-95 whitespace-nowrap text-[10px] font-bold",
-                  isActive ? "bg-[#00EFFF] text-black" : "bg-[#00EFFF]/80 text-black/80",
-                ].join(" ")}
-                title={g}
-                aria-label={g}
+                onClick={() =>
+                  navigate("/playlist", {
+                    state: { album }, // later we’ll use this to open album/playlist details
+                  })
+                }
+                className="
+                  rounded-2xl overflow-hidden
+                  bg-white/5 border border-white/10
+                  transition duration-200
+                  hover:bg-white/10 hover:scale-[1.02]
+                  active:scale-[0.99]
+                  text-left
+                "
+                title={`${album.name} • ${album.artist}`}
               >
-                {/* ✅ ADDED THIS LINE (this is what makes the genre show) */}
-                {g}
-              </button>
-            );
-          })}
-        </div>
+                {/* artwork */}
+                <div className="w-full h-[140px] bg-white/10 overflow-hidden">
+                  {album.artwork ? (
+                    <img
+                      src={album.artwork}
+                      alt=""
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  ) : null}
+                </div>
 
-        <h2 className="mt-10 text-center text-[#00FFFF] text-sm font-bold">
-          Top Albums
-        </h2>
-
-        {/* 2-column stacked cards like your mock */}
-        <div className="mt-10 grid grid-cols-2 gap-x-10 gap-y-12">
-          {filtered.map((a) => (
-            <button
-              key={a.id}
-              type="button"
-              className="relative w-[140px] h-[170px] transition duration-200 hover:scale-[1.02] active:scale-[0.99]"
-              title={`${a.name} • ${a.artist}`}
-            >
-              <div className="absolute inset-0 translate-x-3 translate-y-3 bg-[#00EFFF] rounded-2xl" />
-              <div className="absolute inset-0 bg-[#CFFFFF] rounded-2xl flex items-end p-3">
-                <div className="text-left w-full">
-                  <p className="text-black text-[11px] font-black truncate">
-                    {a.name}
+                {/* text */}
+                <div className="p-3">
+                  <p className="text-white font-black text-sm truncate">
+                    {album.name}
                   </p>
-                  <p className="text-black/70 text-[10px] font-bold truncate">
-                    {a.artist}
+                  <p className="text-white/70 text-xs truncate mt-1">
+                    {album.artist}
                   </p>
-                  <p className="text-black/60 text-[9px] font-semibold mt-1">
-                    {a.genre}
+                  <p className="text-white/50 text-[10px] mt-1 truncate">
+                    {album.genre || "All"}
                   </p>
                 </div>
-              </div>
-            </button>
-          ))}
-        </div>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
-
-      <BottomNav />
-
     </div>
   );
 }
