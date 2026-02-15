@@ -296,19 +296,21 @@ const GENRES = [
 
 // ✅ SECTION 2 CONFIG (pills)
 const SECTION2_PILLS = [
-  { id: "trending-artists", title: "Trending Artists", path: "/listening-trending" },
-  { id: "sweet-90s", title: "Sweet 90’s", path: "/listening-90s" },
-  { id: "street-hits", title: "Street Hits", path: "/listening-street" },
-  { id: "party-starters", title: "Party Starters", path: "/listening-party" },
+  { id: "trending-artists", title: "Trending Artists", path: "/listening/trending" },
+  { id: "sweet-90s", title: "Sweet 90’s", path: "/listening/sweet-90s" },
+  { id: "street-hits", title: "Street Hits", path: "/listening/street-hits" },
+  { id: "party-starters", title: "Party Starters", path: "/listening/party-starters" },
 ];
+
 
 // ✅ SECTION 3 CONFIG (mood chips)
 const SECTION3_MOODS = [
-  { id: "love", title: "Love / Feel Good", path: "/mood-love" },
-  { id: "heartbreak", title: "Heartbreak", path: "/mood-heartbreak" },
-  { id: "gym", title: "Gym / Energy", path: "/mood-gym" },
-  { id: "relax", title: "Relax / Focus", path: "/mood-relax" },
+  { id: "love", title: "Love / Feel Good", path: "/mood/love" },
+  { id: "heartbreak", title: "Heartbreak", path: "/mood/heartbreak" },
+  { id: "gym", title: "Gym / Energy", path: "/mood/gym" },
+  { id: "relax", title: "Relax / Focus", path: "/mood/relax" },
 ];
+
 
 // ✅ SECTION 1 CONFIG
 const SECTION1_TILES = [
@@ -625,49 +627,33 @@ export default function Library() {
                     });
                   }
 
-                  if (tile.id === "popular-artists") {
-                    const seen = new Set();
-                    const artists = [];
+                 if (tile.id === "popular-playlists") {
+  if (!realPlaylists.length) {
+    return navigate("/popular-playlists", {
+      state: { genre: genreName, playlists: [] },
+    });
+  }
 
-                    // ✅ if no realTracks yet, fallback to local songs so page isn’t empty
-                    if (!realTracks || realTracks.length === 0) {
-                      const songs = activeGenre?.songs ?? [];
-                      for (const s of songs) {
-                        const key = String(s.artist || "").toLowerCase();
-                        if (!key || seen.has(key)) continue;
-                        seen.add(key);
+  const playlists = realPlaylists.slice(0, 24).map((p) => ({
+    id: String(p?.id),
+    title: p?.playlist_name || p?.title || "Playlist",
+    artwork:
+      p?.artwork?.["150x150"] ||
+      p?.artwork?.["480x480"] ||
+      p?.artwork?.["1000x1000"] ||
+      "",
+    userId: String(p?.user?.id || ""),
+    artist: p?.user?.name || p?.user?.handle || "Unknown",
+  }));
 
-                        artists.push({
-                          id: `local-${key}`,
-                          name: s.artist,
-                          artwork: "",
-                          genre: genreName,
-                        });
+  return navigate("/popular-playlists", {
+    state: {
+      genre: genreName,
+      playlists, // ✅ THIS IS THE KEY
+    },
+  });
+}
 
-                        if (artists.length >= 18) break;
-                      }
-                    } else {
-                      for (const t of realTracks) {
-                        const uid = t.userId;
-                        if (!uid || seen.has(uid)) continue;
-                        seen.add(uid);
-
-                        artists.push({
-                          id: uid,
-                          userId: uid,
-                          name: t.artist,
-                          artwork: t.artistArtwork || t.artwork || "",
-                          genre: genreName,
-                        });
-
-                        if (artists.length >= 18) break;
-                      }
-                    }
-
-                    return navigate("/popular-artists", {
-                      state: { genre: genreName, artists },
-                    });
-                  }
 
                   if (tile.id === "popular-playlists") {
   const genreName = activeGenre?.name || "All";

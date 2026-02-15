@@ -23,6 +23,11 @@ import NewReleases from "./pages/NewReleases";
 import Playlist from "./pages/Playlist";
 
 import ArtistProfile from "./pages/ArtistProfile";
+import ListeningShelf from "./pages/ListeningShelf";
+import MoodShelf from "./pages/MoodShelf";
+
+
+
 
 function PlayerLayout() {
   return (
@@ -63,6 +68,10 @@ export default function App() {
         <Route path="/new-releases" element={<NewReleases />} />
         <Route path="/playlist" element={<Playlist />} />
       <Route path="/artist" element={<ArtistProfile />} />
+      <Route path="/listening/:slug" element={<ListeningShelf />} />
+      <Route path="/mood/:slug" element={<MoodShelf />} />
+
+
 
       </Route>
     </Routes>
