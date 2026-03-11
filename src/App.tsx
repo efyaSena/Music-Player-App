@@ -26,26 +26,19 @@ import ArtistProfile from "./pages/ArtistProfile";
 import ListeningShelf from "./pages/ListeningShelf";
 import MoodShelf from "./pages/MoodShelf";
 
-
-
-
-function PlayerLayout() {
+function PlayerLayout(): JSX.Element {
   return (
     <div className="min-h-dvh bg-black text-white overflow-x-hidden pb-[160px]">
-      {/* page content */}
       <Outlet />
 
-      {/* PlayerBar sits above BottomNav */}
       <PlayerBar />
 
-      {/* BottomNav at the very bottom */}
       <BottomNav />
     </div>
   );
 }
 
-
-export default function App() {
+export default function App(): JSX.Element {
   return (
     <Routes>
       {/* pages with NO bottom bars */}
@@ -67,12 +60,9 @@ export default function App() {
         <Route path="/popular-playlists" element={<PopularPlaylists />} />
         <Route path="/new-releases" element={<NewReleases />} />
         <Route path="/playlist" element={<Playlist />} />
-      <Route path="/artist" element={<ArtistProfile />} />
-      <Route path="/listening/:slug" element={<ListeningShelf />} />
-      <Route path="/mood/:slug" element={<MoodShelf />} />
-
-
-
+        <Route path="/artist" element={<ArtistProfile />} />
+        <Route path="/listening/:slug" element={<ListeningShelf />} />
+        <Route path="/mood/:slug" element={<MoodShelf />} />
       </Route>
     </Routes>
   );
