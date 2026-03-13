@@ -101,7 +101,7 @@ export default function PlayerBar() {
         initial={{ y: 120 }}
         animate={{ y: 0 }}
         transition={{ type: "spring", stiffness: 120 }}
-        className="fixed left-0 right-0 bottom-20 z-[60] w-full bg-[#CFFFFF]/95 backdrop-blur border-t border-black/10 px-6 py-4 text-black cursor-pointer"
+       className="fixed left-0 right-0 bottom-16 z-[60] w-full bg-[#CFFFFF]/95 backdrop-blur border-t border-black/10 px-3 py-2 text-black cursor-pointer"
         onClick={() => {
           setMenuOpen(false);
           setExpanded(true);
@@ -188,11 +188,9 @@ export default function PlayerBar() {
           )}
         </div>
 
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <WaveformSeekbar />
-        </motion.div>
+       
 
-        <div className="flex items-center justify-center gap-10">
+        <div className="flex items-center justify-center gap-6">
           <button
             disabled={prevDisabled}
             onClick={(e) => {
